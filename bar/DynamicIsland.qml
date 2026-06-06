@@ -9,7 +9,7 @@ Item {
     width: centerCapsule.width + (20 * 2)
     height: centerCapsule.height
 
-    property int baseHeight: ThemeService.barHeight
+    property int baseHeight: ThemeService.barTotalHeight
     property alias islandState: root._islandState
     property string _islandState: "windowTitle"
     property var activePlayer: null

@@ -7,7 +7,7 @@ Row {
     id: root
     spacing: 10
     
-    property int pillHeight: ThemeService.barHeight
+    property int pillHeight: ThemeService.sideCapsuleHeight
 
     // Launcher Pill
     StyledRect {

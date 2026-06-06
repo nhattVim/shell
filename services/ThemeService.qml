@@ -25,12 +25,14 @@ Singleton {
     // Geometry
     readonly property int radius: 19
     readonly property int radiusSmall: 6
+    readonly property int screenRadius: 20 // Dedicated for the 4 corners
     readonly property int animDuration: 250
-    readonly property real frameThickness: 1.0
+    readonly property real frameThickness: 0.5
 
     // Bar specific
-    readonly property int barHeight: 38
-    readonly property int islandWidth: 380 // Length kept as requested
+    readonly property int barTotalHeight: 40
+    readonly property int sideCapsuleHeight: 35
+    readonly property int islandWidth: 285
     readonly property int islandDashboardWidth: 540
     readonly property int islandDashboardHeight: 280
     

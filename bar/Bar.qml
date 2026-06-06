@@ -14,16 +14,12 @@ PanelWindow {
         right: true
     }
 
-    // The total vertical length (height) of the bar from the top of the screen.
-    property int barTotalHeight: 40
-    // Explicit height for the side groups (Left/Right)
-    property int sideCapsuleHeight: 35
-
     // FIXED WINDOW HEIGHT to prevent flickering
     implicitHeight: 450
     color: "transparent"
 
-    exclusiveZone: barTotalHeight + 8
+    // Use centralized values from ThemeService
+    exclusiveZone: ThemeService.barTotalHeight + 8
     exclusionMode: ExclusionMode.Ignore
 
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
@@ -80,10 +76,10 @@ PanelWindow {
         LeftGroup {
             id: leftGroup
             anchors.left: parent.left
-            anchors.leftMargin: 24
+            anchors.leftMargin: 5
             anchors.top: parent.top
-            anchors.topMargin: barWindow.barTotalHeight - barWindow.sideCapsuleHeight
-            pillHeight: barWindow.sideCapsuleHeight
+            anchors.topMargin: ThemeService.barTotalHeight - ThemeService.sideCapsuleHeight
+            pillHeight: ThemeService.sideCapsuleHeight
         }
 
         DynamicIsland {
@@ -91,7 +87,7 @@ PanelWindow {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: parent.top
             anchors.topMargin: 0
-            baseHeight: barWindow.barTotalHeight
+            baseHeight: ThemeService.barTotalHeight
             
             islandState: barWindow.islandState
             activePlayer: barWindow.activePlayer
@@ -102,10 +98,10 @@ PanelWindow {
         RightGroup {
             id: rightGroup
             anchors.right: parent.right
-            anchors.rightMargin: 24
+            anchors.rightMargin: 5
             anchors.top: parent.top
-            anchors.topMargin: barWindow.barTotalHeight - barWindow.sideCapsuleHeight
-            pillHeight: barWindow.sideCapsuleHeight
+            anchors.topMargin: ThemeService.barTotalHeight - ThemeService.sideCapsuleHeight
+            pillHeight: ThemeService.sideCapsuleHeight
             
             islandState: barWindow.islandState
             onIslandStateChanged: barWindow.islandState = islandState

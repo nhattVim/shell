@@ -58,7 +58,7 @@ PanelWindow {
         Rectangle {
             anchors.fill: parent
             anchors.margins: screenFrame.thickness
-            radius: ThemeService.radius + 2
+            radius: ThemeService.screenRadius
             color: "white"
         }
     }

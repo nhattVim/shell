@@ -9,7 +9,7 @@ Row {
     id: root
     spacing: 10
     
-    property int pillHeight: ThemeService.barHeight
+    property int pillHeight: ThemeService.sideCapsuleHeight
     property alias islandState: root._islandState
     property string _islandState: ""
 
@@ -52,7 +52,7 @@ Row {
     // Stats & Clock Pill
     StyledRect {
         id: statsPill
-        height: ThemeService.barHeight
+        height: root.pillHeight
         width: statsRow.implicitWidth + 24
         radius: height / 2
         rectColor: ThemeService.background
