@@ -3,9 +3,9 @@ import "../services"
 
 Column {
     id: root
-    spacing: 20
+    spacing: ThemeService.spacingExtraLarge
     anchors.fill: parent
-    anchors.margins: 20
+    anchors.margins: ThemeService.spacingExtraLarge
 
     property var activePlayer: null
 
@@ -18,16 +18,16 @@ Column {
     }
 
     Row {
-        spacing: 20
+        spacing: ThemeService.spacingExtraLarge
         width: parent.width
         
         // Media Info
         Column {
-            spacing: 8
+            spacing: ThemeService.spacingSmall
             width: parent.width * 0.6
             Text {
                 text: activePlayer ? activePlayer.trackTitle : "No Media"
-                color: "white"
+                color: ThemeService.textBright
                 font.family: ThemeService.fontName
                 font.bold: true
                 elide: Text.ElideRight
@@ -40,17 +40,17 @@ Column {
                 font.pixelSize: 12
             }
             Row {
-                spacing: 25
-                Text { text: "⏮"; color: "white"; font.pixelSize: 18 }
+                spacing: ThemeService.spacingExtraLarge
+                Text { text: "⏮"; color: ThemeService.textBright; font.pixelSize: 18 }
                 Text { text: ""; color: ThemeService.primary; font.pixelSize: 22 }
-                Text { text: "⏭"; color: "white"; font.pixelSize: 18 }
+                Text { text: "⏭"; color: ThemeService.textBright; font.pixelSize: 18 }
             }
         }
 
         // Stats Grid
         Grid {
             columns: 2
-            spacing: 15
+            spacing: ThemeService.spacingLarge
             Column {
                 Text { text: "CPU"; color: ThemeService.textDim; font.family: ThemeService.fontName; font.pixelSize: 10 }
                 Text { text: "12%"; color: ThemeService.secondary; font.family: ThemeService.fontName; font.bold: true }

@@ -40,7 +40,7 @@ Singleton {
 
     function search(query) {
         if (!query || query.trim() === "") {
-            return applications.slice(0, 6);
+            return applications.slice(0, 50);
         }
 
         let q = query.toLowerCase().trim();
@@ -73,7 +73,7 @@ Singleton {
         matches.sort((a, b) => b.score - a.score);
 
         let result = [];
-        for (let i = 0; i < Math.min(6, matches.length); i++) {
+        for (let i = 0; i < Math.min(50, matches.length); i++) {
             result.push(matches[i].app);
         }
         return result;

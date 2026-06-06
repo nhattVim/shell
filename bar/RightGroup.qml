@@ -7,7 +7,7 @@ import "../components"
 
 Row {
     id: root
-    spacing: 10
+    spacing: ThemeService.spacingMedium
     
     property int pillHeight: ThemeService.sideCapsuleHeight
     property alias islandState: root._islandState
@@ -17,7 +17,7 @@ Row {
     StyledRect {
         id: trayPill
         height: root.pillHeight
-        width: trayRow.implicitWidth + 20
+        width: trayRow.implicitWidth + ThemeService.islandEarSize
         radius: height / 2
         visible: trayRow.count > 0
         rectColor: ThemeService.background
@@ -27,7 +27,7 @@ Row {
         Row {
             id: trayRow
             anchors.centerIn: parent
-            spacing: 8
+            spacing: ThemeService.spacingSmall
             property int count: trayRepeater.count
             Repeater {
                 id: trayRepeater
@@ -53,7 +53,7 @@ Row {
     StyledRect {
         id: statsPill
         height: root.pillHeight
-        width: statsRow.implicitWidth + 24
+        width: statsRow.implicitWidth + ThemeService.radiusLarge
         radius: height / 2
         rectColor: ThemeService.background
         rectOpacity: ThemeService.bgOpacity
@@ -62,9 +62,9 @@ Row {
         Row {
             id: statsRow
             anchors.centerIn: parent
-            spacing: 16
+            spacing: ThemeService.spacingLarge
             Row {
-                spacing: 8
+                spacing: ThemeService.spacingSmall
                 Text { text: ""; font.pixelSize: 12; color: ThemeService.secondary }
                 Text { text: Math.round(BatteryService.percentage) + "%"; font.family: ThemeService.fontName; font.pixelSize: 11; color: ThemeService.foreground }
             }
@@ -99,7 +99,8 @@ Row {
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
-            onClicked: {
+            // Use onPressed for immediate reaction
+            onPressed: {
                 if (root.islandState === "powerMenu") root.islandState = "windowTitle";
                 else root.islandState = "powerMenu";
             }

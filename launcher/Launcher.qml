@@ -20,7 +20,7 @@ PanelWindow {
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "quickshell-launcher"
 
-    color: shellRoot.launcherActive ? Qt.rgba(0, 0, 0, 0.4) : "transparent"
+    color: shellRoot.launcherActive ? ThemeService.scrimColor : "transparent"
     visible: shellRoot.launcherActive
 
     Behavior on color {
@@ -46,9 +46,10 @@ PanelWindow {
     // Centered glassmorphic launcher card
     StyledRect {
         id: launcherCard
-        width: 440
-        height: 380
+        width: ThemeService.launcherWidth
+        height: ThemeService.launcherHeight
         anchors.centerIn: parent
+        clip: true // Ensure content stays inside
 
         // Prevent clicks inside the card from closing it
         MouseArea {
@@ -59,23 +60,23 @@ PanelWindow {
         // Inner layout
         Column {
             anchors.fill: parent
-            anchors.margins: 16
-            spacing: 14
+            anchors.margins: ThemeService.spacingLarge
+            spacing: ThemeService.spacingLarge
 
             // --- SEARCH BOX ---
             Rectangle {
                 width: parent.width
-                height: 40
-                radius: 8
+                height: ThemeService.launcherSearchHeight
+                radius: ThemeService.radiusSmall
                 color: ThemeService.surfaceBright
                 border.color: ThemeService.primary
                 border.width: 1
 
                 Row {
                     anchors.fill: parent
-                    anchors.leftMargin: 12
-                    anchors.rightMargin: 12
-                    spacing: 10
+                    anchors.leftMargin: ThemeService.radiusMedium
+                    anchors.rightMargin: ThemeService.radiusMedium
+                    spacing: ThemeService.spacingMedium
 
                     Text {
                         text: "" // Search icon
@@ -110,16 +111,20 @@ PanelWindow {
                         }
 
                         Keys.onPressed: event => {
-                            let resultsList = launcherWindow.results;
-                            if (event.key === Qt.Key_Down) {
-                                launcherWindow.selectedIndex = (launcherWindow.selectedIndex + 1) % resultsList.length;
+                            let resultsCount = resultsListView.count;
+                            if (event.key === Qt.Key_Down || (event.key === Qt.Key_Tab && !(event.modifiers & Qt.ShiftModifier))) {
+                                if (resultsCount > 0) {
+                                    launcherWindow.selectedIndex = (launcherWindow.selectedIndex + 1) % resultsCount;
+                                }
                                 event.accepted = true;
-                            } else if (event.key === Qt.Key_Up) {
-                                launcherWindow.selectedIndex = (launcherWindow.selectedIndex - 1 + resultsList.length) % resultsList.length;
+                            } else if (event.key === Qt.Key_Up || (event.key === Qt.Key_Backtab) || (event.key === Qt.Key_Tab && (event.modifiers & Qt.ShiftModifier))) {
+                                if (resultsCount > 0) {
+                                    launcherWindow.selectedIndex = (launcherWindow.selectedIndex - 1 + resultsCount) % resultsCount;
+                                }
                                 event.accepted = true;
                             } else if (event.key === Qt.Key_Enter || event.key === Qt.Key_Return) {
-                                if (resultsList.length > 0 && launcherWindow.selectedIndex >= 0 && launcherWindow.selectedIndex < resultsList.length) {
-                                    LauncherService.launch(resultsList[launcherWindow.selectedIndex]);
+                                if (resultsCount > 0 && launcherWindow.selectedIndex >= 0 && launcherWindow.selectedIndex < resultsCount) {
+                                    LauncherService.launch(launcherWindow.results[launcherWindow.selectedIndex]);
                                     shellRoot.launcherActive = false;
                                 }
                                 event.accepted = true;
@@ -139,72 +144,78 @@ PanelWindow {
                 color: Qt.rgba(ThemeService.border.r, ThemeService.border.g, ThemeService.border.b, 0.1)
             }
 
-            // --- RESULTS COLUMN ---
-            Column {
+            // --- RESULTS LIST ---
+            ListView {
+                id: resultsListView
                 width: parent.width
-                spacing: 6
+                height: ThemeService.launcherListHeight // Exactly 6 items
+                model: launcherWindow.results
+                clip: true
+                spacing: ThemeService.spacingSmall
+                
+                currentIndex: launcherWindow.selectedIndex
+                highlightFollowsCurrentItem: true
+                
+                delegate: Rectangle {
+                    id: itemRect
+                    required property int index
+                    required property var modelData // { name, icon, comment, entry }
 
-                Repeater {
-                    model: launcherWindow.results
+                    width: resultsListView.width
+                    height: ThemeService.launcherItemHeight
+                    radius: ThemeService.radiusSmall
+                    color: (index === launcherWindow.selectedIndex) ? Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.15) : (itemMouseArea.containsMouse ? Qt.rgba(ThemeService.surfaceBright.r, ThemeService.surfaceBright.g, ThemeService.surfaceBright.b, 0.4) : "transparent")
+                    border.color: (index === launcherWindow.selectedIndex) ? ThemeService.primary : "transparent"
+                    border.width: 1
 
-                    // Item Delegate
-                    Rectangle {
-                        id: itemRect
-                        required property int index
-                        required property var modelData // { name, icon, comment, entry }
+                    Row {
+                        anchors.fill: parent
+                        anchors.leftMargin: ThemeService.radiusMedium
+                        anchors.rightMargin: ThemeService.radiusMedium
+                        spacing: ThemeService.radiusMedium
 
-                        width: parent.width
-                        height: 42
-                        radius: 8
-                        color: (index === launcherWindow.selectedIndex) ? Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.15) : (itemMouseArea.containsMouse ? Qt.rgba(ThemeService.surfaceBright.r, ThemeService.surfaceBright.g, ThemeService.surfaceBright.b, 0.4) : "transparent")
-                        border.color: (index === launcherWindow.selectedIndex) ? ThemeService.primary : "transparent"
-                        border.width: 1
-
-                        Row {
-                            anchors.fill: parent
-                            anchors.leftMargin: 12
-                            anchors.rightMargin: 12
-                            spacing: 12
-
-                            IconImage {
-                                width: 24
-                                height: 24
-                                anchors.verticalCenter: parent.verticalCenter
-                                source: Quickshell.iconPath(modelData.icon) || ""
-                            }
-
-                            Column {
-                                anchors.verticalCenter: parent.verticalCenter
-                                width: parent.width - 44
-
-                                Text {
-                                    text: modelData.name
-                                    color: (index === launcherWindow.selectedIndex) ? ThemeService.primary : ThemeService.foreground
-                                    font.pixelSize: 13
-                                    font.weight: Font.DemiBold
-                                    elide: Text.ElideRight
-                                }
-                                Text {
-                                    text: modelData.comment
-                                    color: ThemeService.textDim
-                                    font.pixelSize: 10
-                                    elide: Text.ElideRight
-                                    visible: text !== ""
-                                }
-                            }
+                        IconImage {
+                            width: 24
+                            height: 24
+                            anchors.verticalCenter: parent.verticalCenter
+                            source: Quickshell.iconPath(modelData.icon) || ""
                         }
 
-                        MouseArea {
-                            id: itemMouseArea
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: {
-                                LauncherService.launch(modelData);
-                                shellRoot.launcherActive = false;
+                        Column {
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: parent.width - 44
+
+                            Text {
+                                text: modelData.name
+                                color: (index === launcherWindow.selectedIndex) ? ThemeService.primary : ThemeService.foreground
+                                font.pixelSize: 13
+                                font.weight: Font.DemiBold
+                                elide: Text.ElideRight
+                            }
+                            Text {
+                                text: modelData.comment
+                                color: ThemeService.textDim
+                                font.pixelSize: 10
+                                elide: Text.ElideRight
+                                visible: text !== ""
                             }
                         }
                     }
+
+                    MouseArea {
+                        id: itemMouseArea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            LauncherService.launch(modelData);
+                            shellRoot.launcherActive = false;
+                        }
+                    }
+                }
+                
+                onCurrentIndexChanged: {
+                    positionViewAtIndex(currentIndex, ListView.Contain);
                 }
             }
 

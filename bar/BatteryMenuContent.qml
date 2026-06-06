@@ -9,16 +9,16 @@ Column {
     anchors.fill: parent
     anchors.margins: ThemeService.spacingExtraLarge
 
-    property var triggerPower: null
+    property var triggerProfile: null
     property int selectedIndex: 0
     property var actionList: [
-        { icon: "󰐥", label: "Shutdown", color: ThemeService.danger, action: "shutdown" },
-        { icon: "󰑓", label: "Reboot", color: ThemeService.warning, action: "reboot" },
-        { icon: "󰍃", label: "Logout", color: ThemeService.success, action: "logout" }
+        { icon: "󰌪", label: "Power Saver", color: ThemeService.secondary, action: "power-saver" },
+        { icon: "󰗑", label: "Balanced", color: ThemeService.primary, action: "balanced" },
+        { icon: "󰓅", label: "Performance", color: ThemeService.warning, action: "performance" }
     ]
 
     Text {
-        text: "System Actions"
+        text: "Performance Profiles"
         font.family: ThemeService.fontName
         font.pixelSize: 14
         font.bold: true
@@ -33,15 +33,15 @@ Column {
         Repeater {
             model: root.actionList
             delegate: StyledRect {
-                id: powerBtn
+                id: profileBtn
                 required property int index
                 required property var modelData
 
-                width: 80; height: 80
+                width: 90; height: 90
                 radius: ThemeService.radiusMedium
                 rectColor: ThemeService.surfaceBright
-                rectOpacity: (root.selectedIndex === index || powerBtnMouse.containsMouse) ? 0.6 : 0.2
-                borderOpacityValue: (root.selectedIndex === index || powerBtnMouse.containsMouse) ? 0.2 : 0.0
+                rectOpacity: (root.selectedIndex === index || profileBtnMouse.containsMouse) ? 0.6 : 0.2
+                borderOpacityValue: (root.selectedIndex === index || profileBtnMouse.containsMouse) ? 0.2 : 0.0
                 
                 Column {
                     anchors.centerIn: parent
@@ -50,13 +50,13 @@ Column {
                         text: modelData.icon
                         font.family: ThemeService.iconFont
                         font.pixelSize: 24
-                        color: modelData.color
+                        color: modelData.iconColor || modelData.color
                         anchors.horizontalCenter: parent.horizontalCenter
                     }
                     Text {
                         text: modelData.label
                         font.family: ThemeService.fontName
-                        font.pixelSize: 9
+                        font.pixelSize: 10
                         font.bold: true
                         color: ThemeService.textBright
                         anchors.horizontalCenter: parent.horizontalCenter
@@ -64,11 +64,11 @@ Column {
                 }
 
                 MouseArea {
-                    id: powerBtnMouse
+                    id: profileBtnMouse
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: { if (root.triggerPower) root.triggerPower(modelData.action); }
+                    onClicked: { if (root.triggerProfile) root.triggerProfile(modelData.action); }
                     onEntered: root.selectedIndex = index
                 }
             }
@@ -77,7 +77,7 @@ Column {
 
     Keys.onPressed: event => {
         if (event.key === Qt.Key_Escape) {
-            if (root.triggerPower) root.triggerPower("close");
+            if (root.triggerProfile) root.triggerProfile("close");
             event.accepted = true;
         } else if (event.key === Qt.Key_Right || (event.key === Qt.Key_Tab && !(event.modifiers & Qt.ShiftModifier))) {
             root.selectedIndex = (root.selectedIndex + 1) % root.actionList.length;
@@ -86,7 +86,7 @@ Column {
             root.selectedIndex = (root.selectedIndex - 1 + root.actionList.length) % root.actionList.length;
             event.accepted = true;
         } else if (event.key === Qt.Key_Enter || event.key === Qt.Key_Return) {
-            if (root.triggerPower) root.triggerPower(root.actionList[root.selectedIndex].action);
+            if (root.triggerProfile) root.triggerProfile(root.actionList[root.selectedIndex].action);
             event.accepted = true;
         }
     }

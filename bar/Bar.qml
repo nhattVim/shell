@@ -14,69 +14,45 @@ PanelWindow {
         right: true
     }
 
-    // FIXED WINDOW HEIGHT to prevent flickering
-    implicitHeight: 450
+    // FIXED WINDOW HEIGHT
+    implicitHeight: ThemeService.barMaxHeight
     color: "transparent"
 
-    // Use centralized values from ThemeService
-    exclusiveZone: ThemeService.barTotalHeight + 8
+    exclusiveZone: ThemeService.barTotalHeight
     exclusionMode: ExclusionMode.Ignore
 
-    WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+    // Robust keyboard focus logic (Exclusive for menus to match ambxst)
+    WlrLayershell.keyboardFocus: (islandState !== "windowTitle" && islandState !== "volume") ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
     WlrLayershell.layer: WlrLayer.Top
 
-    // Precise mask using a single item container.
+    // DYNAMIC MASK
     mask: Region {
-        item: maskHitboxContainer
+        item: (islandState !== "windowTitle" && islandState !== "volume") ? fullWindowHitbox : null
+        regions: [
+            Region { item: leftGroup },
+            Region { item: dynamicIsland },
+            Region { item: rightGroup }
+        ]
     }
 
-    Item {
-        id: maskHitboxContainer
-        anchors.fill: parent
-        visible: false
-
-        // Left Group Hitbox
-        Rectangle {
-            x: leftGroup.x; y: leftGroup.y
-            width: leftGroup.width; height: leftGroup.height
-            color: "white"
-        }
-        
-        // Dynamic Island Hitbox
-        Rectangle {
-            x: dynamicIsland.x + 20; y: dynamicIsland.y
-            width: dynamicIsland.width - 40; height: dynamicIsland.height
-            color: "white"
-        }
-        
-        // Right Group Hitbox
-        Rectangle {
-            x: rightGroup.x; y: rightGroup.y
-            width: rightGroup.width; height: rightGroup.height
-            color: "white"
-        }
-    }
-
-    property string islandState: "windowTitle"
-    property bool startupCompleted: false
-    readonly property var activePlayer: Mpris.players.values.length > 0 ? Mpris.players.values[0] : null
-
-    Timer {
-        id: startupTimer
-        interval: 1500
-        running: true
-        onTriggered: startupCompleted = true
-    }
-
-    // Main Content
+    // --- VISIBLE UI LAYER ---
     Item {
         id: mainBarContent
         anchors.fill: parent
 
+        // Click-outside detector
+        MouseArea {
+            id: clickOutsideDetector
+            anchors.fill: parent
+            enabled: barWindow.islandState !== "windowTitle" && barWindow.islandState !== "volume"
+            onPressed: barWindow.islandState = "windowTitle"
+            z: -1 
+        }
+
         LeftGroup {
             id: leftGroup
             anchors.left: parent.left
-            anchors.leftMargin: 5
+            anchors.leftMargin: ThemeService.barMargin
             anchors.top: parent.top
             anchors.topMargin: ThemeService.barTotalHeight - ThemeService.sideCapsuleHeight
             pillHeight: ThemeService.sideCapsuleHeight
@@ -92,13 +68,15 @@ PanelWindow {
             islandState: barWindow.islandState
             activePlayer: barWindow.activePlayer
             triggerPower: barWindow.triggerPower
+            triggerProfile: barWindow.triggerProfile
+            
             onIslandStateChanged: barWindow.islandState = islandState
         }
 
         RightGroup {
             id: rightGroup
             anchors.right: parent.right
-            anchors.rightMargin: 5
+            anchors.rightMargin: ThemeService.barMargin
             anchors.top: parent.top
             anchors.topMargin: ThemeService.barTotalHeight - ThemeService.sideCapsuleHeight
             pillHeight: ThemeService.sideCapsuleHeight
@@ -108,7 +86,27 @@ PanelWindow {
         }
     }
 
-    // Global event handlers to trigger island HUDs
+
+    Item {
+        id: fullWindowHitbox
+        anchors.fill: parent
+        visible: true
+        opacity: 0
+        Rectangle { anchors.fill: parent; color: "white" }
+    }
+
+    property string islandState: "windowTitle"
+    property bool startupCompleted: false
+    readonly property var activePlayer: Mpris.players.values.length > 0 ? Mpris.players.values[0] : null
+
+    Timer {
+        id: startupTimer
+        interval: 1500
+        running: true
+        onTriggered: startupCompleted = true
+    }
+
+    // Global event handlers
     Connections {
         target: AudioService
         function onVolumeChanged() { if (startupCompleted) dynamicIsland.triggerIsland("volume"); }
@@ -121,10 +119,20 @@ PanelWindow {
     }
 
     function triggerPower(action) {
+        if (action === "close") { barWindow.islandState = "windowTitle"; return; }
         let p = Qt.createQmlObject('import Quickshell.Io; Process { }', barWindow);
         if (action === "shutdown") p.command = ["systemctl", "poweroff"];
         else if (action === "reboot") p.command = ["reboot"];
         else if (action === "logout") p.command = ["hyprctl", "dispatch", "exit"];
+        p.onExited.connect(() => p.destroy());
+        p.running = true;
+        barWindow.islandState = "windowTitle";
+    }
+
+    function triggerProfile(profile) {
+        if (profile === "close") { barWindow.islandState = "windowTitle"; return; }
+        let p = Qt.createQmlObject('import Quickshell.Io; Process { }', barWindow);
+        p.command = ["powerprofilesctl", "set", profile];
         p.onExited.connect(() => p.destroy());
         p.running = true;
         barWindow.islandState = "windowTitle";

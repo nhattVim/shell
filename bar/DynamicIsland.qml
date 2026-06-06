@@ -6,7 +6,7 @@ import "../components"
 
 Item {
     id: root
-    width: centerCapsule.width + (20 * 2)
+    width: centerCapsule.width + (ThemeService.islandEarSize * 2)
     height: centerCapsule.height
 
     property int baseHeight: ThemeService.barTotalHeight
@@ -14,12 +14,13 @@ Item {
     property string _islandState: "windowTitle"
     property var activePlayer: null
     property var triggerPower: null
+    property var triggerProfile: null
 
     // Left "Ear" (Concave Corner)
     RoundCorner {
         anchors.right: centerCapsule.left
         anchors.top: parent.top
-        size: 20
+        size: ThemeService.islandEarSize
         corner: RoundCorner.CornerEnum.TopRight
         color: ThemeService.background
     }
@@ -28,7 +29,7 @@ Item {
     RoundCorner {
         anchors.left: centerCapsule.right
         anchors.top: parent.top
-        size: 20
+        size: ThemeService.islandEarSize
         corner: RoundCorner.CornerEnum.TopLeft
         color: ThemeService.background
     }
@@ -48,28 +49,28 @@ Item {
             if (isHovered) {
                 islandTimer.stop();
             } else {
-                if (root.islandState !== "powerMenu" && root.islandState !== "media") islandTimer.restart();
+                if (root.islandState !== "powerMenu" && root.islandState !== "media" && root.islandState !== "batteryMenu") islandTimer.restart();
             }
         }
         
         height: {
-            if (root.islandState === "powerMenu") return 200;
+            if (root.islandState === "powerMenu" || root.islandState === "batteryMenu") return ThemeService.islandMenuHeight; 
             if (root.islandState === "media") return ThemeService.islandDashboardHeight;
-            if (root.islandState !== "windowTitle") return 48; 
+            if (root.islandState !== "windowTitle") return ThemeService.islandCompactHeight; 
             return root.baseHeight;
         }
         
         width: {
-            if (root.islandState === "powerMenu") return 400;
+            if (root.islandState === "powerMenu" || root.islandState === "batteryMenu") return ThemeService.islandMenuWidth; 
             if (root.islandState === "media") return ThemeService.islandDashboardWidth;
-            if (root.islandState === "volume") return 210;
+            if (root.islandState === "volume") return ThemeService.islandVolumeWidth;
             return ThemeService.islandWidth;
         }
         
         topLeftRadiusVal: 0
         topRightRadiusVal: 0
-        bottomLeftRadiusVal: (root.islandState === "media" || root.islandState === "powerMenu") ? 24 : 19
-        bottomRightRadiusVal: (root.islandState === "media" || root.islandState === "powerMenu") ? 24 : 19
+        bottomLeftRadiusVal: (root.islandState === "media" || root.islandState === "powerMenu" || root.islandState === "batteryMenu") ? ThemeService.radiusLarge : ThemeService.radius
+        bottomRightRadiusVal: (root.islandState === "media" || root.islandState === "powerMenu" || root.islandState === "batteryMenu") ? ThemeService.radiusLarge : ThemeService.radius
         
         Behavior on width { NumberAnimation { duration: ThemeService.animDuration + 100; easing.type: Easing.OutExpo } }
         Behavior on height { NumberAnimation { duration: ThemeService.animDuration + 100; easing.type: Easing.OutExpo } }
@@ -85,22 +86,20 @@ Item {
         Item {
             anchors.fill: parent
             
-            // 1. COLLAPSED VIEW (High-Detail 3-Part Layout)
+            // 1. COLLAPSED VIEW
             Item {
                 anchors.fill: parent
-                visible: root.islandState !== "media" && root.islandState !== "powerMenu"
+                visible: root.islandState !== "media" && root.islandState !== "powerMenu" && root.islandState !== "batteryMenu"
                 
                 Row {
                     anchors.centerIn: parent
                     width: parent.width - 16
-                    spacing: 8
+                    spacing: ThemeService.spacingSmall
 
-                    // LEFT: Dashboard Toggle
                     Item {
                         id: dashToggleItem
                         width: 32; height: 32
                         anchors.verticalCenter: parent.verticalCenter
-                        
                         Text {
                             anchors.centerIn: parent
                             text: "󰕮"
@@ -109,7 +108,6 @@ Item {
                             opacity: dashToggleMouse.containsMouse ? 1.0 : 0.8
                             Behavior on color { ColorAnimation { duration: 150 } }
                         }
-
                         MouseArea {
                             id: dashToggleMouse
                             anchors.fill: parent
@@ -119,103 +117,62 @@ Item {
                         }
                     }
 
-                    // SEPARATOR
-                    Rectangle {
-                        width: 2; height: 18
-                        radius: 1
-                        color: ThemeService.foreground
-                        opacity: 0.2
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
+                    Rectangle { width: 2; height: 18; radius: 1; color: ThemeService.foreground; opacity: 0.2; anchors.verticalCenter: parent.verticalCenter }
 
-                    // CENTER: Large Title Frame (Premium Look)
                     StyledRect {
                         id: titleFrame
                         width: parent.width - (dashToggleItem.width + notifIndicatorItem.width + (parent.spacing * 2) + 4 + 16)
-                        height: parent.height - 4 // Reduced margins from 8 to 4
+                        height: parent.height - 4
                         radius: height / 2
                         anchors.verticalCenter: parent.verticalCenter
                         rectColor: ThemeService.surfaceBright
-                        rectOpacity: 0.6 // More visible frame
+                        rectOpacity: 0.6 
                         borderOpacityValue: 0.15
-
                         Text {
-                            id: titleText
                             anchors.centerIn: parent
                             text: root.islandState === "windowTitle" ? (WindowService.activeWindowTitle || "Desktop") : ""
-                            color: "white"
-                            font.family: ThemeService.fontName
-                            font.pixelSize: 11
-                            font.weight: Font.Bold
-                            visible: root.islandState === "windowTitle"
-                            elide: Text.ElideRight
-                            width: parent.width - 24
-                            horizontalAlignment: Text.AlignHCenter
+                            color: ThemeService.textBright; font.family: ThemeService.fontName; font.pixelSize: 11; font.weight: Font.Bold
+                            visible: root.islandState === "windowTitle"; elide: Text.ElideRight; width: parent.width - 24; horizontalAlignment: Text.AlignHCenter
                         }
-
                         Row {
                             anchors.centerIn: parent
-                            visible: root.islandState === "volume"
-                            spacing: 8
+                            visible: root.islandState === "volume"; spacing: ThemeService.spacingSmall
                             Text { text: AudioService.muted ? "" : ""; color: ThemeService.primary; font.pixelSize: 13 }
                             Rectangle { width: 120; height: 4; radius: 2; color: ThemeService.surface; Rectangle { width: parent.width * AudioService.volume; height: 4; radius: 2; color: ThemeService.primary } }
                         }
                     }
 
-                    // SEPARATOR
-                    Rectangle {
-                        width: 2; height: 18
-                        radius: 1
-                        color: ThemeService.foreground
-                        opacity: 0.2
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
+                    Rectangle { width: 2; height: 18; radius: 1; color: ThemeService.foreground; opacity: 0.2; anchors.verticalCenter: parent.verticalCenter }
 
-                    // RIGHT: Notifications
                     Item {
-                        id: notifIndicatorItem
-                        width: 32; height: 32
-                        anchors.verticalCenter: parent.verticalCenter
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: "󰂚"
-                            font.pixelSize: 16
-                            color: ThemeService.foreground
-                            opacity: 0.8
-                        }
+                        id: notifIndicatorItem; width: 32; height: 32; anchors.verticalCenter: parent.verticalCenter
+                        Text { anchors.centerIn: parent; text: "󰂚"; font.pixelSize: 16; color: ThemeService.foreground; opacity: 0.8 }
                     }
                 }
             }
             
             PowerMenuContent {
+                id: powerMenu
                 visible: root.islandState === "powerMenu"
                 triggerPower: root.triggerPower
+                onVisibleChanged: if (visible) powerMenu.forceActiveFocus()
+            }
+
+            BatteryMenuContent {
+                id: batteryMenu
+                visible: root.islandState === "batteryMenu"
+                triggerProfile: root.triggerProfile
+                onVisibleChanged: if (visible) batteryMenu.forceActiveFocus()
             }
             
             Item {
                 anchors.fill: parent
                 visible: root.islandState === "media"
-
-                DashboardContent {
-                    anchors.fill: parent
-                    activePlayer: root.activePlayer
-                }
-
-                // Close button for dashboard
+                DashboardContent { anchors.fill: parent; activePlayer: root.activePlayer }
                 MouseArea {
-                    anchors.top: parent.top
-                    anchors.right: parent.right
-                    width: 44; height: 44
-                    cursorShape: Qt.PointingHandCursor
+                    anchors.top: parent.top; anchors.right: parent.right; width: 44; height: 44; cursorShape: Qt.PointingHandCursor
                     onClicked: root.islandState = "windowTitle"
-                    
-                    Text {
-                        anchors.centerIn: parent
-                        text: "󰅖"
-                        color: ThemeService.textDim
-                        font.pixelSize: 18
-                    }
+                    Text { anchors.centerIn: parent; text: "󰅖"; color: ThemeService.textDim; font.pixelSize: 18 }
                 }
             }
         }
@@ -226,7 +183,7 @@ Item {
         interval: 3000
         running: false
         repeat: false
-        onTriggered: if (root.islandState !== "media" && root.islandState !== "powerMenu") root.islandState = "windowTitle"
+        onTriggered: if (root.islandState !== "media" && root.islandState !== "powerMenu" && root.islandState !== "batteryMenu") root.islandState = "windowTitle"
     }
 
     function triggerIsland(state) {

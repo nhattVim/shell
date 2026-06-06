@@ -5,7 +5,9 @@ import "../components"
 
 Row {
     id: root
-    spacing: 10
+    spacing: ThemeService.spacingMedium
+    width: implicitWidth
+    height: implicitHeight
     
     property int pillHeight: ThemeService.sideCapsuleHeight
 
@@ -23,11 +25,12 @@ Row {
             anchors.centerIn: parent
             width: ThemeService.iconSizeLauncher
             height: width
-            source: "file:///home/albedo/.config/quickshell/ambxst-lite/assets/ambxst/ambxst-icon.svg"
+            source: ThemeService.launcherIcon
             smooth: true
         }
 
         MouseArea {
+            id: launcherMouse
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
@@ -44,7 +47,7 @@ Row {
     StyledRect {
         id: workspacesPill
         height: root.pillHeight
-        width: wsRow.implicitWidth + 24
+        width: wsRow.implicitWidth + ThemeService.radiusLarge
         radius: height / 2
         rectColor: ThemeService.background
         rectOpacity: ThemeService.bgOpacity
@@ -53,7 +56,7 @@ Row {
         Row {
             id: wsRow
             anchors.centerIn: parent
-            spacing: 8
+            spacing: ThemeService.spacingSmall
             Repeater {
                 model: 10
                 Rectangle {
