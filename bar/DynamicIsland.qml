@@ -46,33 +46,29 @@ Item {
         onIsHoveredChanged: {
             if (isHovered) {
                 islandTimer.stop();
-                if (root.islandState === "windowTitle" && root.activePlayer !== null) {
-                    root.islandState = "media";
-                }
             } else {
-                if (root.islandState !== "powerMenu") islandTimer.restart();
+                if (root.islandState !== "powerMenu" && root.islandState !== "media") islandTimer.restart();
             }
         }
         
         height: {
             if (root.islandState === "powerMenu") return 200;
-            if (isHovered) return ThemeService.islandDashboardHeight;
+            if (root.islandState === "media") return ThemeService.islandDashboardHeight;
             if (root.islandState !== "windowTitle") return 44;
             return ThemeService.barHeight;
         }
         
         width: {
             if (root.islandState === "powerMenu") return 400;
-            if (isHovered) return ThemeService.islandDashboardWidth;
+            if (root.islandState === "media") return ThemeService.islandDashboardWidth;
             if (root.islandState === "volume") return 210;
-            if (root.islandState === "media") return 250;
             return ThemeService.islandWidth;
         }
         
         topLeftRadiusVal: 0
         topRightRadiusVal: 0
-        bottomLeftRadiusVal: (isHovered || root.islandState === "powerMenu") ? 24 : 18
-        bottomRightRadiusVal: (isHovered || root.islandState === "powerMenu") ? 24 : 18
+        bottomLeftRadiusVal: (root.islandState === "media" || root.islandState === "powerMenu") ? 24 : 18
+        bottomRightRadiusVal: (root.islandState === "media" || root.islandState === "powerMenu") ? 24 : 18
         
         Behavior on width { NumberAnimation { duration: ThemeService.animDuration + 100; easing.type: Easing.OutExpo } }
         Behavior on height { NumberAnimation { duration: ThemeService.animDuration + 100; easing.type: Easing.OutExpo } }
@@ -80,6 +76,7 @@ Item {
         MouseArea {
             anchors.fill: parent
             hoverEnabled: true
+            acceptedButtons: Qt.NoButton
             onEntered: centerCapsule.isHovered = true
             onExited: centerCapsule.isHovered = false
         }
@@ -87,44 +84,114 @@ Item {
         Item {
             anchors.fill: parent
             
-            // 1. COLLAPSED VIEW
+            // 1. COLLAPSED VIEW (3-Part Layout like ambxst)
             Item {
                 anchors.fill: parent
-                visible: !centerCapsule.isHovered && root.islandState !== "powerMenu"
-                
-                Text {
-                    id: titleText
-                    anchors.centerIn: parent
-                    text: root.islandState === "windowTitle" ? (WindowService.activeWindowTitle || "Desktop") : ""
-                    color: ThemeService.foreground
-                    font.family: ThemeService.fontName
-                    font.pixelSize: 11
-                    font.weight: Font.Medium
-                    visible: root.islandState === "windowTitle"
-                    elide: Text.ElideRight
-                    width: parent.width - 20
-                    horizontalAlignment: Text.AlignHCenter
-                }
+                visible: root.islandState !== "media" && root.islandState !== "powerMenu"
                 
                 Row {
                     anchors.centerIn: parent
-                    visible: root.islandState === "volume"
-                    spacing: 10
-                    Text {
-                        text: AudioService.muted ? "" : ""
-                        color: ThemeService.primary
-                        font.pixelSize: 12
+                    width: parent.width - 24
+                    spacing: 12
+
+                    // LEFT: Dashboard Toggle
+                    Item {
+                        id: dashToggle
+                        width: 24
+                        height: 24
+                        anchors.verticalCenter: parent.verticalCenter
+                        
+                        Text {
+                            anchors.centerIn: parent
+                            text: "󰕮" // Dashboard icon
+                            font.pixelSize: 14
+                            color: dashToggleMouse.containsMouse ? ThemeService.primary : ThemeService.foreground
+                            opacity: dashToggleMouse.containsMouse ? 1.0 : 0.7
+                            Behavior on color { ColorAnimation { duration: 150 } }
+                        }
+
+                        MouseArea {
+                            id: dashToggleMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                if (root.islandState === "media") root.islandState = "windowTitle";
+                                else root.islandState = "media";
+                            }
+                        }
                     }
-                    Rectangle {
-                        width: 100
-                        height: 4
-                        radius: 2
-                        color: ThemeService.surfaceBright
+
+                    // CENTER: Window Title
+                    Item {
+                        width: parent.width - 72 // Fill remaining space
+                        height: parent.height
+                        anchors.verticalCenter: parent.verticalCenter
+                        clip: true
+
+                        Text {
+                            id: titleText
+                            anchors.centerIn: parent
+                            text: root.islandState === "windowTitle" ? (WindowService.activeWindowTitle || "Desktop") : ""
+                            color: ThemeService.foreground
+                            font.family: ThemeService.fontName
+                            font.pixelSize: 10
+                            font.weight: Font.Medium
+                            visible: root.islandState === "windowTitle"
+                            elide: Text.ElideRight
+                            width: parent.width
+                            horizontalAlignment: Text.AlignHCenter
+                        }
+
+                        // HUD for Volume (Still centered)
+                        Row {
+                            anchors.centerIn: parent
+                            visible: root.islandState === "volume"
+                            spacing: 8
+                            Text {
+                                text: AudioService.muted ? "" : ""
+                                color: ThemeService.primary
+                                font.pixelSize: 11
+                            }
+                            Rectangle {
+                                width: 80
+                                height: 3
+                                radius: 1.5
+                                color: ThemeService.surfaceBright
+                                Rectangle {
+                                    width: parent.width * AudioService.volume
+                                    height: parent.height
+                                    radius: parent.radius
+                                    color: ThemeService.primary
+                                }
+                            }
+                        }
+                    }
+
+                    // RIGHT: Notifications
+                    Item {
+                        id: notifIndicator
+                        width: 24
+                        height: 24
+                        anchors.verticalCenter: parent.verticalCenter
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "󰂚" // Bell icon
+                            font.pixelSize: 14
+                            color: ThemeService.foreground
+                            opacity: 0.7
+                        }
+                        
+                        // Small dot for mock notification status
                         Rectangle {
-                            width: parent.width * AudioService.volume
-                            height: 4
-                            radius: 2
+                            width: 6; height: 6; radius: 3
                             color: ThemeService.primary
+                            anchors.top: parent.top
+                            anchors.right: parent.right
+                            anchors.topMargin: 2
+                            anchors.rightMargin: 2
+                            visible: false // Change to true if you want a notification dot
                         }
                     }
                 }
@@ -136,10 +203,31 @@ Item {
                 triggerPower: root.triggerPower
             }
             
-            // 3. DASHBOARD VIEW
-            DashboardContent {
-                visible: centerCapsule.isHovered && root.islandState !== "powerMenu"
-                activePlayer: root.activePlayer
+            // 3. DASHBOARD VIEW (Expanded)
+            Item {
+                anchors.fill: parent
+                visible: root.islandState === "media"
+
+                DashboardContent {
+                    anchors.fill: parent
+                    activePlayer: root.activePlayer
+                }
+
+                // Close button for dashboard
+                MouseArea {
+                    anchors.top: parent.top
+                    anchors.right: parent.right
+                    width: 32; height: 32
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: root.islandState = "windowTitle"
+                    
+                    Text {
+                        anchors.centerIn: parent
+                        text: "󰅖"
+                        color: ThemeService.textDim
+                        font.pixelSize: 16
+                    }
+                }
             }
         }
     }
@@ -149,7 +237,11 @@ Item {
         interval: 3000
         running: false
         repeat: false
-        onTriggered: root.islandState = "windowTitle"
+        onTriggered: {
+            if (root.islandState !== "media" && root.islandState !== "powerMenu") {
+                root.islandState = "windowTitle";
+            }
+        }
     }
 
     function triggerIsland(state) {

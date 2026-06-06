@@ -14,19 +14,54 @@ PanelWindow {
         right: true
     }
 
-    // Dynamic height to avoid blocking desktop clicks
-    implicitHeight: (dynamicIsland.isHovered || islandState === "powerMenu") ? 400 : 60
+    // CONSTANT HEIGHT to eliminate flicker from surface resizing.
+    implicitHeight: 400
     color: "transparent"
 
-    exclusiveZone: 44
+    exclusiveZone: 40
     exclusionMode: ExclusionMode.Ignore
 
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
     WlrLayershell.layer: WlrLayer.Top
 
-    // Precise mask tracking the pills
+    // Precise mask using a single item container.
+    // Quickshell will use the visible children of this item to define the region.
     mask: Region {
-        item: mainBarContent
+        item: maskHitboxContainer
+    }
+
+    Item {
+        id: maskHitboxContainer
+        anchors.fill: parent
+        visible: false // Hidden from rendering, but used for mask
+
+        // Left Group Hitbox
+        Rectangle {
+            x: leftGroup.x
+            y: leftGroup.y
+            width: leftGroup.width
+            height: leftGroup.height
+            color: "white"
+        }
+
+        // Dynamic Island Hitbox
+        Rectangle {
+            // Include expansion area if needed, but here we track the container
+            x: dynamicIsland.x + 20
+            y: dynamicIsland.y
+            width: dynamicIsland.width - 40
+            height: dynamicIsland.height
+            color: "white"
+        }
+
+        // Right Group Hitbox
+        Rectangle {
+            x: rightGroup.x
+            y: rightGroup.y
+            width: rightGroup.width
+            height: rightGroup.height
+            color: "white"
+        }
     }
 
     property string islandState: "windowTitle"
@@ -60,10 +95,7 @@ PanelWindow {
             islandState: barWindow.islandState
             activePlayer: barWindow.activePlayer
             triggerPower: barWindow.triggerPower
-            
-            // Expose internal hover state for implicitHeight calculation
-            property bool isHovered: centerCapsule.isHovered
-            
+
             onIslandStateChanged: barWindow.islandState = islandState
         }
 
