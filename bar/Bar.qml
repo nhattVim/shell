@@ -14,18 +14,22 @@ PanelWindow {
         right: true
     }
 
-    // CONSTANT HEIGHT to eliminate flicker from surface resizing.
-    implicitHeight: 400
+    // The total vertical length (height) of the bar from the top of the screen.
+    property int barTotalHeight: 40
+    // Explicit height for the side groups (Left/Right)
+    property int sideCapsuleHeight: 35
+
+    // FIXED WINDOW HEIGHT to prevent flickering
+    implicitHeight: 450
     color: "transparent"
 
-    exclusiveZone: 40
+    exclusiveZone: barTotalHeight + 8
     exclusionMode: ExclusionMode.Ignore
 
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
     WlrLayershell.layer: WlrLayer.Top
 
     // Precise mask using a single item container.
-    // Quickshell will use the visible children of this item to define the region.
     mask: Region {
         item: maskHitboxContainer
     }
@@ -33,33 +37,26 @@ PanelWindow {
     Item {
         id: maskHitboxContainer
         anchors.fill: parent
-        visible: false // Hidden from rendering, but used for mask
+        visible: false
 
         // Left Group Hitbox
         Rectangle {
-            x: leftGroup.x
-            y: leftGroup.y
-            width: leftGroup.width
-            height: leftGroup.height
+            x: leftGroup.x; y: leftGroup.y
+            width: leftGroup.width; height: leftGroup.height
             color: "white"
         }
-
+        
         // Dynamic Island Hitbox
         Rectangle {
-            // Include expansion area if needed, but here we track the container
-            x: dynamicIsland.x + 20
-            y: dynamicIsland.y
-            width: dynamicIsland.width - 40
-            height: dynamicIsland.height
+            x: dynamicIsland.x + 20; y: dynamicIsland.y
+            width: dynamicIsland.width - 40; height: dynamicIsland.height
             color: "white"
         }
-
+        
         // Right Group Hitbox
         Rectangle {
-            x: rightGroup.x
-            y: rightGroup.y
-            width: rightGroup.width
-            height: rightGroup.height
+            x: rightGroup.x; y: rightGroup.y
+            width: rightGroup.width; height: rightGroup.height
             color: "white"
         }
     }
@@ -83,28 +80,33 @@ PanelWindow {
         LeftGroup {
             id: leftGroup
             anchors.left: parent.left
-            anchors.leftMargin: 16
+            anchors.leftMargin: 24
             anchors.top: parent.top
-            anchors.topMargin: 5
+            anchors.topMargin: barWindow.barTotalHeight - barWindow.sideCapsuleHeight
+            pillHeight: barWindow.sideCapsuleHeight
         }
 
         DynamicIsland {
             id: dynamicIsland
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: parent.top
+            anchors.topMargin: 0
+            baseHeight: barWindow.barTotalHeight
+            
             islandState: barWindow.islandState
             activePlayer: barWindow.activePlayer
             triggerPower: barWindow.triggerPower
-
             onIslandStateChanged: barWindow.islandState = islandState
         }
 
         RightGroup {
             id: rightGroup
             anchors.right: parent.right
-            anchors.rightMargin: 16
+            anchors.rightMargin: 24
             anchors.top: parent.top
-            anchors.topMargin: 5
+            anchors.topMargin: barWindow.barTotalHeight - barWindow.sideCapsuleHeight
+            pillHeight: barWindow.sideCapsuleHeight
+            
             islandState: barWindow.islandState
             onIslandStateChanged: barWindow.islandState = islandState
         }

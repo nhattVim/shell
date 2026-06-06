@@ -23,16 +23,16 @@ Singleton {
     readonly property real bgOpacityHigh: 0.9
     
     // Geometry
-    readonly property int radius: 18
+    readonly property int radius: 19
     readonly property int radiusSmall: 6
     readonly property int animDuration: 250
     readonly property real frameThickness: 1.0
 
     // Bar specific
-    readonly property int barHeight: 36
-    readonly property int islandWidth: 200
-    readonly property int islandDashboardWidth: 500
-    readonly property int islandDashboardHeight: 260
+    readonly property int barHeight: 38
+    readonly property int islandWidth: 380 // Length kept as requested
+    readonly property int islandDashboardWidth: 540
+    readonly property int islandDashboardHeight: 280
     
     // Icon sizes
     readonly property int iconSizeTray: 20

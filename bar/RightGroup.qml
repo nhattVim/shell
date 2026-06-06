@@ -7,15 +7,16 @@ import "../components"
 
 Row {
     id: root
-    spacing: 6
+    spacing: 10
     
+    property int pillHeight: ThemeService.barHeight
     property alias islandState: root._islandState
     property string _islandState: ""
 
     // System Tray Pill
     StyledRect {
         id: trayPill
-        height: ThemeService.barHeight
+        height: root.pillHeight
         width: trayRow.implicitWidth + 20
         radius: height / 2
         visible: trayRow.count > 0
@@ -80,7 +81,7 @@ Row {
     // Power Pill
     StyledRect {
         id: powerPill
-        height: ThemeService.barHeight
+        height: root.pillHeight
         width: height
         radius: height / 2
         rectColor: ThemeService.background

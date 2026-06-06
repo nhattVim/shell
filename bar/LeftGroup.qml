@@ -5,12 +5,14 @@ import "../components"
 
 Row {
     id: root
-    spacing: 6
+    spacing: 10
+    
+    property int pillHeight: ThemeService.barHeight
 
     // Launcher Pill
     StyledRect {
         id: launcherPill
-        height: ThemeService.barHeight
+        height: root.pillHeight
         width: height
         radius: height / 2
         rectColor: ThemeService.background
@@ -41,7 +43,7 @@ Row {
     // Workspaces Pill
     StyledRect {
         id: workspacesPill
-        height: ThemeService.barHeight
+        height: root.pillHeight
         width: wsRow.implicitWidth + 24
         radius: height / 2
         rectColor: ThemeService.background
