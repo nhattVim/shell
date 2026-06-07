@@ -22,12 +22,14 @@ PanelWindow {
     exclusionMode: ExclusionMode.Ignore
 
     // Robust keyboard focus logic (Exclusive for menus to match ambxst)
-    WlrLayershell.keyboardFocus: (islandState !== "windowTitle" && islandState !== "volume") ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+    readonly property bool islandOverlayOpen: islandState !== "windowTitle" && islandState !== "volume"
+
+    WlrLayershell.keyboardFocus: islandOverlayOpen ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
     WlrLayershell.layer: WlrLayer.Top
 
     // DYNAMIC MASK
     mask: Region {
-        item: (islandState !== "windowTitle" && islandState !== "volume") ? fullWindowHitbox : null
+        item: islandOverlayOpen ? fullWindowHitbox : null
         regions: [
             Region { item: leftGroup },
             Region { item: dynamicIsland },
@@ -44,7 +46,7 @@ PanelWindow {
         MouseArea {
             id: clickOutsideDetector
             anchors.fill: parent
-            enabled: barWindow.islandState !== "windowTitle" && barWindow.islandState !== "volume"
+            enabled: barWindow.islandOverlayOpen
             onPressed: barWindow.islandState = "windowTitle"
             z: -1 
         }
@@ -70,7 +72,7 @@ PanelWindow {
             triggerPower: barWindow.triggerPower
             triggerProfile: barWindow.triggerProfile
             
-            onIslandStateChanged: barWindow.islandState = islandState
+            onRequestIslandState: state => barWindow.islandState = state
         }
 
         RightGroup {
@@ -82,7 +84,8 @@ PanelWindow {
             pillHeight: ThemeService.sideCapsuleHeight
             
             islandState: barWindow.islandState
-            onIslandStateChanged: barWindow.islandState = islandState
+            triggerProfile: barWindow.triggerProfile
+            onRequestIslandState: state => barWindow.islandState = state
         }
     }
 
@@ -97,7 +100,11 @@ PanelWindow {
 
     property string islandState: "windowTitle"
     property bool startupCompleted: false
-    readonly property var activePlayer: Mpris.players.values.length > 0 ? Mpris.players.values[0] : null
+    readonly property var playableMprisPlayers: Mpris.players.values.filter(player => {
+        const dbusName = (player.dbusName || "").toLowerCase();
+        return !dbusName.includes("firefox");
+    })
+    readonly property var activePlayer: playableMprisPlayers.length > 0 ? playableMprisPlayers[0] : null
 
     Timer {
         id: startupTimer
@@ -113,11 +120,6 @@ PanelWindow {
         function onMutedChanged() { if (startupCompleted) dynamicIsland.triggerIsland("volume"); }
     }
 
-    Connections {
-        target: BatteryService
-        function onIsPluggedInChanged() { if (startupCompleted) dynamicIsland.triggerIsland("battery"); }
-    }
-
     function triggerPower(action) {
         if (action === "close") { barWindow.islandState = "windowTitle"; return; }
         let p = Qt.createQmlObject('import Quickshell.Io; Process { }', barWindow);
@@ -131,10 +133,7 @@ PanelWindow {
 
     function triggerProfile(profile) {
         if (profile === "close") { barWindow.islandState = "windowTitle"; return; }
-        let p = Qt.createQmlObject('import Quickshell.Io; Process { }', barWindow);
-        p.command = ["powerprofilesctl", "set", profile];
-        p.onExited.connect(() => p.destroy());
-        p.running = true;
+        PowerProfileService.setProfile(profile);
         barWindow.islandState = "windowTitle";
     }
 }

@@ -10,11 +10,11 @@ Item {
     height: centerCapsule.height
 
     property int baseHeight: ThemeService.barTotalHeight
-    property alias islandState: root._islandState
-    property string _islandState: "windowTitle"
+    property string islandState: "windowTitle"
     property var activePlayer: null
     property var triggerPower: null
     property var triggerProfile: null
+    signal requestIslandState(string state)
 
     // Left "Ear" (Concave Corner)
     RoundCorner {
@@ -113,7 +113,7 @@ Item {
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: root.islandState = "media"
+                            onClicked: root.requestIslandState("media")
                         }
                     }
 
@@ -171,7 +171,7 @@ Item {
                 DashboardContent { anchors.fill: parent; activePlayer: root.activePlayer }
                 MouseArea {
                     anchors.top: parent.top; anchors.right: parent.right; width: 44; height: 44; cursorShape: Qt.PointingHandCursor
-                    onClicked: root.islandState = "windowTitle"
+                    onClicked: root.requestIslandState("windowTitle")
                     Text { anchors.centerIn: parent; text: "󰅖"; color: ThemeService.textDim; font.pixelSize: 18 }
                 }
             }
@@ -183,11 +183,11 @@ Item {
         interval: 3000
         running: false
         repeat: false
-        onTriggered: if (root.islandState !== "media" && root.islandState !== "powerMenu" && root.islandState !== "batteryMenu") root.islandState = "windowTitle"
+        onTriggered: if (root.islandState !== "media" && root.islandState !== "powerMenu" && root.islandState !== "batteryMenu") root.requestIslandState("windowTitle")
     }
 
     function triggerIsland(state) {
-        root.islandState = state;
+        root.requestIslandState(state);
         islandTimer.restart();
     }
 }

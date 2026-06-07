@@ -20,6 +20,7 @@ Singleton {
     signal activeWindowChanged(string clientClass, string title)
     signal workspaceCreated(int id, string name)
     signal workspaceDestroyed(int id, string name)
+    signal clientsChanged()
 
     property Socket socket: Socket {
         id: socket
@@ -42,7 +43,12 @@ Singleton {
         let eventName = parts[0];
         let eventData = parts[1];
 
-        if (eventName === "workspace") {
+        if (eventName === "workspacev2") {
+            let subparts = eventData.split(",");
+            let id = parseInt(subparts[0]) || 0;
+            let name = subparts.slice(1).join(",");
+            workspaceChanged(id, name);
+        } else if (eventName === "workspace") {
             let id = parseInt(eventData) || 0;
             workspaceChanged(id, eventData);
         } else if (eventName === "activewindow") {
@@ -54,12 +60,24 @@ Singleton {
             } else {
                 activeWindowChanged(eventData, "");
             }
+        } else if (eventName === "createworkspacev2") {
+            let subparts = eventData.split(",");
+            let id = parseInt(subparts[0]) || 0;
+            let name = subparts.slice(1).join(",");
+            workspaceCreated(id, name);
         } else if (eventName === "createworkspace") {
             let id = parseInt(eventData) || 0;
             workspaceCreated(id, eventData);
+        } else if (eventName === "destroyworkspacev2") {
+            let subparts = eventData.split(",");
+            let id = parseInt(subparts[0]) || 0;
+            let name = subparts.slice(1).join(",");
+            workspaceDestroyed(id, name);
         } else if (eventName === "destroyworkspace") {
             let id = parseInt(eventData) || 0;
             workspaceDestroyed(id, eventData);
+        } else if (eventName === "openwindow" || eventName === "closewindow" || eventName === "movewindow" || eventName === "movewindowv2") {
+            clientsChanged();
         }
     }
 
