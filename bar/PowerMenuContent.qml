@@ -17,14 +17,14 @@ Column {
         { icon: "󰍃", label: "Logout", color: ThemeService.success, action: "logout" }
     ]
 
-    Text {
-        text: "System Actions"
-        font.family: ThemeService.fontName
-        font.pixelSize: 14
-        font.bold: true
-        color: ThemeService.primary
-        anchors.horizontalCenter: parent.horizontalCenter
-    }
+    // Text {
+    //     text: "System Actions"
+    //     font.family: ThemeService.fontName
+    //     font.pixelSize: 14
+    //     font.bold: true
+    //     color: ThemeService.primary
+    //     anchors.horizontalCenter: parent.horizontalCenter
+    // }
 
     Row {
         spacing: ThemeService.spacingExtraLarge

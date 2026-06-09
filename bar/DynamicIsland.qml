@@ -168,11 +168,10 @@ Item {
             Item {
                 anchors.fill: parent
                 visible: root.islandState === "media"
-                DashboardContent { anchors.fill: parent; activePlayer: root.activePlayer }
-                MouseArea {
-                    anchors.top: parent.top; anchors.right: parent.right; width: 44; height: 44; cursorShape: Qt.PointingHandCursor
-                    onClicked: root.requestIslandState("windowTitle")
-                    Text { anchors.centerIn: parent; text: "󰅖"; color: ThemeService.textDim; font.pixelSize: 18 }
+                DashboardContent {
+                    anchors.fill: parent
+                    activePlayer: root.activePlayer
+                    onRequestClose: root.requestIslandState("windowTitle")
                 }
             }
         }

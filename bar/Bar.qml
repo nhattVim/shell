@@ -100,11 +100,23 @@ PanelWindow {
 
     property string islandState: "windowTitle"
     property bool startupCompleted: false
-    readonly property var playableMprisPlayers: Mpris.players.values.filter(player => {
-        const dbusName = (player.dbusName || "").toLowerCase();
-        return !dbusName.includes("firefox");
-    })
-    readonly property var activePlayer: playableMprisPlayers.length > 0 ? playableMprisPlayers[0] : null
+    function chooseActivePlayer() {
+        const players = Mpris.players.values || [];
+        if (players.length === 0) return null;
+
+        const playingPlayer = players.find(player => player.playbackState === MprisPlaybackState.Playing);
+        if (playingPlayer) return playingPlayer;
+
+        const nonFirefoxPlayer = players.find(player => {
+            const dbusName = (player.dbusName || "").toLowerCase();
+            return !dbusName.includes("firefox");
+        });
+        if (nonFirefoxPlayer) return nonFirefoxPlayer;
+
+        return players[0];
+    }
+
+    readonly property var activePlayer: chooseActivePlayer()
 
     Timer {
         id: startupTimer
