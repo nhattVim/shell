@@ -19,13 +19,11 @@ PanelWindow {
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "quickshell-launcher"
+    exclusionMode: ExclusionMode.Ignore
+    exclusiveZone: 0
 
-    color: shellRoot.launcherActive ? ThemeService.scrimColor : "transparent"
+    color: "transparent"
     visible: shellRoot.launcherActive
-
-    Behavior on color {
-        ColorAnimation { duration: ThemeService.animDuration }
-    }
 
     onVisibleChanged: {
         if (visible) {
@@ -34,6 +32,15 @@ PanelWindow {
             searchInputText.forceActiveFocus();
         }
     }
+
+    // Rectangle {
+    //     anchors.fill: parent
+    //     color: ThemeService.scrimColor
+    //     opacity: shellRoot.launcherActive ? 1 : 0
+    //     Behavior on opacity {
+    //         NumberAnimation { duration: ThemeService.animDuration }
+    //     }
+    // }
 
     // Dismiss launcher when clicking outside the main card
     MouseArea {
@@ -79,7 +86,7 @@ PanelWindow {
                     spacing: ThemeService.spacingMedium
 
                     Text {
-                        text: "" // Search icon
+                        text: " " // Search icon
                         font.pixelSize: 16
                         color: ThemeService.primary
                         anchors.verticalCenter: parent.verticalCenter

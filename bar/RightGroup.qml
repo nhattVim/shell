@@ -1,6 +1,5 @@
 import QtQuick
 import Quickshell
-import Quickshell.Hyprland
 import Quickshell.Wayland
 import Quickshell.Services.SystemTray
 import Quickshell.Widgets
@@ -373,12 +372,6 @@ Row {
                         QsMenuOpener {
                             id: menuOpener
                             menu: trayDelegate.modelData.menu
-                        }
-
-                        HyprlandFocusGrab {
-                            active: trayPopup.visible
-                            windows: [trayPopup]
-                            onCleared: trayPopup.close()
                         }
 
                         Rectangle {
