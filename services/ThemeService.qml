@@ -43,7 +43,7 @@ Singleton {
 
     // Bar specific
     readonly property int barTotalHeight: 40
-    readonly property int barMaxHeight: 450 // Max height for click mask/window
+    readonly property int barMaxHeight: root.islandDashboardHeight + root.barTotalHeight // Max height for click mask/window
     readonly property int barMargin: 10
     readonly property int sideCapsuleHeight: 35
     readonly property string launcherIcon: "file:///home/albedo/.config/quickshell/ambxst-lite/assets/ambxst/ambxst-icon.svg"

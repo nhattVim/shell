@@ -116,20 +116,7 @@ Item {
         z: 0
         acceptedButtons: Qt.LeftButton
         cursorShape: Qt.ArrowCursor
-        onPressed: mouse => {
-            const insideCard =
-                mouse.x >= outerCard.x &&
-                mouse.x <= outerCard.x + outerCard.width &&
-                mouse.y >= outerCard.y &&
-                mouse.y <= outerCard.y + outerCard.height;
-
-            if (!insideCard) {
-                mouse.accepted = true;
-                root.requestClose();
-            } else {
-                mouse.accepted = false;
-            }
-        }
+        onPressed: mouse => mouse.accepted = true
     }
 
     Item {
