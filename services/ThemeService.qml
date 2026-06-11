@@ -50,8 +50,8 @@ Singleton {
     
     // Dynamic Island specific
     readonly property int islandWidth: 285
-    readonly property int islandDashboardWidth: 900
-    readonly property int islandDashboardHeight: 480
+    readonly property int islandDashboardWidth: 940
+    readonly property int islandDashboardHeight: 360
     readonly property int islandCompactHeight: 48
     readonly property int islandVolumeWidth: 210
     readonly property int islandMenuWidth: 360
