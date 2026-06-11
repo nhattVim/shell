@@ -76,11 +76,11 @@ Item {
                 id: weatherIcon
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.top: dateLabel.bottom
-                anchors.topMargin: 24
+                anchors.topMargin: 18
                 text: WeatherService.icon
                 color: ThemeService.foreground
                 font.family: ThemeService.iconFont
-                font.pixelSize: 76
+                font.pixelSize: 68
             }
 
             Text {
@@ -91,28 +91,32 @@ Item {
                 text: WeatherService.ready ? Math.round(WeatherService.temperature) + "°C" : "--°C"
                 color: ThemeService.textBright
                 font.family: ThemeService.fontName
-                font.pixelSize: 58
+                font.pixelSize: 54
                 font.weight: Font.Black
             }
 
             Text {
+                id: conditionLabel
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.top: tempLabel.bottom
-                anchors.topMargin: -2
+                anchors.topMargin: 4
+                width: parent.width - 40
                 text: WeatherService.loading && !WeatherService.ready ? "Loading" : WeatherService.condition
                 color: ThemeService.foreground
                 opacity: 0.86
                 font.family: ThemeService.fontName
-                font.pixelSize: 13
+                font.pixelSize: 12
+                horizontalAlignment: Text.AlignHCenter
+                elide: Text.ElideRight
             }
 
             Row {
                 anchors {
                     horizontalCenter: parent.horizontalCenter
-                    bottom: parent.bottom
-                    bottomMargin: 18
+                    top: conditionLabel.bottom
+                    topMargin: 14
                 }
-                spacing: 18
+                spacing: 22
 
                 SunTime {
                     icon: "󰖜"
