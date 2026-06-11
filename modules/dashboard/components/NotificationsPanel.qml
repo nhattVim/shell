@@ -216,7 +216,6 @@ PanelFrame {
                 font.pixelSize: 24
                 font.weight: Font.Black
                 color: ThemeService.textDim
-                // rotation: -14
                 opacity: 0.72
             }
         }

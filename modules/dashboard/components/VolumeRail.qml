@@ -27,15 +27,21 @@ Item {
         }
 
         Item {
+            id: volumeSlider
+
             Layout.fillWidth: true
             Layout.fillHeight: true
+
+            readonly property int trackPadding: 8
+            readonly property real currentVolume: AudioService.ready ? AudioService.volume : 0
+            readonly property real trackHeight: Math.max(1, height - trackPadding * 2)
 
             Rectangle {
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
-                anchors.topMargin: 8
-                anchors.bottomMargin: 8
+                anchors.topMargin: volumeSlider.trackPadding
+                anchors.bottomMargin: volumeSlider.trackPadding
                 width: 4
                 radius: 2
                 color: ThemeService.surfaceBright
@@ -44,16 +50,16 @@ Item {
             Rectangle {
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.bottom: parent.bottom
-                anchors.bottomMargin: 8
+                anchors.bottomMargin: volumeSlider.trackPadding
                 width: 4
-                height: (parent.height - 16) * (AudioService.ready ? AudioService.volume : 0)
+                height: volumeSlider.trackHeight * volumeSlider.currentVolume
                 radius: 2
                 color: ThemeService.primary
             }
 
             Rectangle {
                 anchors.horizontalCenter: parent.horizontalCenter
-                y: 8 + (parent.height - 16) * (1 - (AudioService.ready ? AudioService.volume : 0)) - height / 2
+                y: volumeSlider.trackPadding + volumeSlider.trackHeight * (1 - volumeSlider.currentVolume) - height / 2
                 width: 16
                 height: 5
                 radius: 2
@@ -66,6 +72,11 @@ Item {
                 onPressed: mouse => updateVolume(mouse.y)
                 onPositionChanged: mouse => {
                     if (pressed) updateVolume(mouse.y);
+                }
+                onWheel: wheel => {
+                    var step = wheel.angleDelta.y > 0 ? 0.04 : -0.04;
+                    AudioService.changeVolume(step);
+                    wheel.accepted = true;
                 }
             }
         }
@@ -105,9 +116,10 @@ Item {
 
     function updateVolume(yPos) {
         if (!AudioService.ready) return;
-        var trackTop = 15;
-        var trackHeight = Math.max(1, height - 30);
-        var value = 1 - Math.max(0, Math.min(trackHeight, yPos - trackTop)) / trackHeight;
+        var trackTop = volumeSlider.trackPadding;
+        var trackHeight = volumeSlider.trackHeight;
+        var localY = Math.max(0, Math.min(trackHeight, yPos - trackTop));
+        var value = 1 - localY / trackHeight;
         AudioService.setVolume(value);
     }
 }

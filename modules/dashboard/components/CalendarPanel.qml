@@ -6,10 +6,12 @@ import "../../../config"
 PanelFrame {
     id: root
 
-    property date currentDate: new Date()
-    readonly property int year: currentDate.getFullYear()
-    readonly property int month: currentDate.getMonth()
-    readonly property int today: currentDate.getDate()
+    property date todayDate: new Date()
+    property date shownDate: new Date()
+    readonly property int year: shownDate.getFullYear()
+    readonly property int month: shownDate.getMonth()
+    readonly property int today: todayDate.getDate()
+    readonly property bool showingCurrentMonth: year === todayDate.getFullYear() && month === todayDate.getMonth()
     readonly property int firstDay: {
         var day = new Date(year, month, 1).getDay();
         return day === 0 ? 6 : day - 1;
@@ -17,12 +19,26 @@ PanelFrame {
     readonly property int daysInMonth: new Date(year, month + 1, 0).getDate()
     readonly property var monthNames: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 
+    function previousMonth() {
+        shownDate = new Date(year, month - 1, 1);
+    }
+
+    function nextMonth() {
+        shownDate = new Date(year, month + 1, 1);
+    }
+
+    function goToday() {
+        var now = new Date();
+        todayDate = now;
+        shownDate = now;
+    }
+
     Timer {
         interval: 60000
         running: true
         repeat: true
         triggeredOnStart: true
-        onTriggered: root.currentDate = new Date()
+        onTriggered: root.todayDate = new Date()
     }
 
     ColumnLayout {
@@ -51,16 +67,26 @@ PanelFrame {
                 }
             }
 
-            RoundIcon {
+            TextButton {
                 Layout.preferredWidth: 34
                 Layout.fillHeight: true
                 icon: "󰅁"
+                onClicked: root.previousMonth()
             }
 
-            RoundIcon {
+            TextButton {
                 Layout.preferredWidth: 34
                 Layout.fillHeight: true
                 icon: "󰅂"
+                onClicked: root.nextMonth()
+            }
+
+            TextButton {
+                Layout.preferredWidth: 34
+                Layout.fillHeight: true
+                icon: "󰔚"
+                filled: root.showingCurrentMonth
+                onClicked: root.goToday()
             }
         }
 
@@ -107,7 +133,7 @@ PanelFrame {
                     readonly property int value: index - root.firstDay + 1
                     readonly property bool inMonth: value >= 1 && value <= root.daysInMonth
                     readonly property int displayValue: inMonth ? value : (value < 1 ? new Date(root.year, root.month, 0).getDate() + value : value - root.daysInMonth)
-                    readonly property bool selected: inMonth && value === root.today
+                    readonly property bool selected: root.showingCurrentMonth && inMonth && value === root.today
 
                     Layout.preferredWidth: 36
                     Layout.preferredHeight: 26
