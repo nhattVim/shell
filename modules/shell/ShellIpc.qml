@@ -51,5 +51,17 @@ Item {
         function brightnessDown(): void {
             BrightnessService.changeBrightness(-0.05, null);
         }
+
+        function screenshot(): void {
+            ScreenshotService.captureRegion();
+        }
+
+        function screenshotScreen(): void {
+            ScreenshotService.captureScreen();
+        }
+
+        function screenrecord(): void {
+            ScreenRecorderService.toggle();
+        }
     }
 }

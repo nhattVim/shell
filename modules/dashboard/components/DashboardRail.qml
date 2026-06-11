@@ -45,16 +45,6 @@ Item {
         }
     }
 
-    Rectangle {
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: parent.top
-        anchors.topMargin: 68
-        width: 1
-        height: parent.height - 90
-        color: ThemeService.border
-        opacity: 0.65
-    }
-
     RailButton {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom

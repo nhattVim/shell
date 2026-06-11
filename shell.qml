@@ -7,6 +7,7 @@ import "modules/osd"
 import "modules/frame"
 import "modules/wallpaper"
 import "modules/notifications"
+import "modules/tools"
 import "services"
 
 ShellRoot {
@@ -65,6 +66,31 @@ ShellRoot {
             required property var modelData
             targetScreen: modelData
         }
+    }
+
+    // Instantiates screenshot region overlays on all connected monitors
+    Variants {
+        model: Quickshell.screens
+
+        ScreenshotOverlay {
+            required property var modelData
+            targetScreen: modelData
+        }
+    }
+
+    // Instantiates screen recording overlays on all connected monitors
+    Variants {
+        model: Quickshell.screens
+
+        RecordOverlay {
+            required property var modelData
+            targetScreen: modelData
+        }
+    }
+
+    // Shows recording controls on the primary monitor while recording
+    RecordIndicator {
+        targetScreen: Quickshell.screens[0]
     }
 
     // Instantiates floating notification popups on the primary monitor
