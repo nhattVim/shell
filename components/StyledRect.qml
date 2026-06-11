@@ -1,5 +1,5 @@
 import QtQuick
-import "../services"
+import "../config"
 
 Rectangle {
     id: rect
