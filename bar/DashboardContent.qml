@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import QtQuick.Effects
 import Quickshell.Services.Mpris
 import "../services"
+import "../components"
 import "dashboard"
 
 Item {
@@ -26,11 +27,6 @@ Item {
         onTriggered: root.activePlayer?.positionChanged()
     }
 
-    Rectangle {
-        anchors.fill: parent
-        color: ThemeService.background
-    }
-
     MouseArea {
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton
@@ -38,12 +34,13 @@ Item {
         onPressed: mouse => mouse.accepted = true
     }
 
-    Rectangle {
+    StyledRect {
         anchors.fill: parent
         anchors.margins: 8
-        radius: 24
-        color: ThemeService.background
-        border.width: 0
+        radius: ThemeService.radiusLarge
+        rectColor: ThemeService.background
+        rectOpacity: 1.0
+        borderOpacityValue: 0.0
         clip: true
 
         Item {

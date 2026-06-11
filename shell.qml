@@ -52,9 +52,17 @@ ShellRoot {
     Variants {
         model: Quickshell.screens
 
-        Bar {
+        Item {
+            id: screenBarContainer
             required property var modelData
-            screen: modelData
+
+            BarReservation {
+                screen: screenBarContainer.modelData
+            }
+
+            Bar {
+                screen: screenBarContainer.modelData
+            }
         }
     }
 

@@ -10,15 +10,13 @@ PanelWindow {
 
     anchors {
         top: true
+        bottom: true
         left: true
         right: true
     }
 
-    // FIXED WINDOW HEIGHT
-    implicitHeight: ThemeService.barMaxHeight
     color: "transparent"
 
-    exclusiveZone: ThemeService.barTotalHeight
     exclusionMode: ExclusionMode.Ignore
 
     // Robust keyboard focus logic (Exclusive for menus to match ambxst)
@@ -27,9 +25,14 @@ PanelWindow {
     WlrLayershell.keyboardFocus: islandOverlayOpen ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
     WlrLayershell.layer: WlrLayer.Top
 
+    Item {
+        id: fullScreenHitbox
+        anchors.fill: parent
+    }
+
     // DYNAMIC MASK
     mask: Region {
-        item: islandOverlayOpen ? fullWindowHitbox : null
+        item: islandOverlayOpen ? fullScreenHitbox : null
         regions: [
             Region { item: leftGroup },
             Region { item: dynamicIsland },
@@ -37,19 +40,18 @@ PanelWindow {
         ]
     }
 
+    MouseArea {
+        id: clickOutsideDetector
+        anchors.fill: parent
+        visible: barWindow.islandOverlayOpen
+        z: -1
+        onPressed: barWindow.islandState = "windowTitle"
+    }
+
     // --- VISIBLE UI LAYER ---
     Item {
         id: mainBarContent
         anchors.fill: parent
-
-        // Click-outside detector
-        MouseArea {
-            id: clickOutsideDetector
-            anchors.fill: parent
-            enabled: barWindow.islandOverlayOpen
-            onPressed: barWindow.islandState = "windowTitle"
-            z: -1 
-        }
 
         LeftGroup {
             id: leftGroup
@@ -87,15 +89,6 @@ PanelWindow {
             triggerProfile: barWindow.triggerProfile
             onRequestIslandState: state => barWindow.islandState = state
         }
-    }
-
-
-    Item {
-        id: fullWindowHitbox
-        anchors.fill: parent
-        visible: true
-        opacity: 0
-        Rectangle { anchors.fill: parent; color: "white" }
     }
 
     property string islandState: "windowTitle"
