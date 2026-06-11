@@ -5,6 +5,9 @@ import "../../../config"
 Item {
     id: root
     signal requestClose()
+    signal pageRequested(string page)
+
+    property string currentPage: "dashboard"
 
     readonly property color accent: ThemeService.primary
     readonly property color panel: ThemeService.surface
@@ -25,22 +28,38 @@ Item {
         RailButton {
             width: 48
             height: 48
-            icon: "󰣇"
-            selected: true
+            icon: "󰕮"
+            selected: root.currentPage === "dashboard"
             accent: root.accent
+
+            MouseArea {
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.pageRequested("dashboard")
+            }
         }
 
         RailButton {
             width: 48
             height: 36
-            icon: "󰙯"
+            icon: "󰖕"
+            selected: root.currentPage === "weather"
             accent: root.accent
+
+            MouseArea {
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.pageRequested("weather")
+            }
         }
 
         RailButton {
             width: 48
             height: 36
-            icon: "󱢠"
+            icon: "󰂚"
+            selected: root.currentPage === "extra"
             accent: root.accent
         }
     }

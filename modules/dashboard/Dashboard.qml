@@ -14,6 +14,7 @@ Item {
 
     signal requestClose()
     property var activePlayer: null
+    property string currentPage: "dashboard"
 
     readonly property bool hasPlayer: activePlayer !== null && activePlayer !== undefined
     readonly property bool isPlaying: activePlayer?.playbackState === MprisPlaybackState.Playing
@@ -61,41 +62,64 @@ Item {
                 y: 0
                 width: dashboardGrid.railWidth
                 height: dashboardGrid.height
+                currentPage: root.currentPage
+                onPageRequested: page => root.currentPage = page
                 onRequestClose: root.requestClose()
             }
 
-            MediaDialCard {
+            Item {
+                id: pageArea
                 x: dashboardGrid.railWidth + dashboardGrid.gap
                 y: 0
-                width: dashboardGrid.mediaWidth
+                width: root.currentPage === "dashboard"
+                    ? dashboardGrid.mediaWidth + dashboardGrid.widgetsWidth + dashboardGrid.notificationWidth + dashboardGrid.gap * 2
+                    : dashboardGrid.width - dashboardGrid.railWidth - dashboardGrid.gap
                 height: dashboardGrid.height
-                activePlayer: root.activePlayer
-                mediaSource: root.mediaSource
-            }
 
-            ColumnLayout {
-                x: dashboardGrid.railWidth + dashboardGrid.mediaWidth + dashboardGrid.gap * 2
-                y: 0
-                width: dashboardGrid.widgetsWidth
-                height: dashboardGrid.height
-                spacing: 8
+                Item {
+                    anchors.fill: parent
+                    visible: root.currentPage === "dashboard"
 
-                ToggleStrip {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 56
+                    MediaDialCard {
+                        x: 0
+                        y: 0
+                        width: dashboardGrid.mediaWidth
+                        height: parent.height
+                        activePlayer: root.activePlayer
+                        mediaSource: root.mediaSource
+                    }
+
+                    ColumnLayout {
+                        x: dashboardGrid.mediaWidth + dashboardGrid.gap
+                        y: 0
+                        width: dashboardGrid.widgetsWidth
+                        height: parent.height
+                        spacing: 8
+
+                        ToggleStrip {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 56
+                        }
+
+                        CalendarPanel {
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                        }
+                    }
+
+                    NotificationsPanel {
+                        x: dashboardGrid.mediaWidth + dashboardGrid.widgetsWidth + dashboardGrid.gap * 2
+                        y: 0
+                        width: dashboardGrid.notificationWidth
+                        height: parent.height
+                    }
                 }
 
-                CalendarPanel {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
+                WeatherPage {
+                    anchors.fill: parent
+                    visible: root.currentPage === "weather"
+                    backgroundSource: root.mediaSource
                 }
-            }
-
-            NotificationsPanel {
-                x: dashboardGrid.railWidth + dashboardGrid.mediaWidth + dashboardGrid.widgetsWidth + dashboardGrid.gap * 3
-                y: 0
-                width: dashboardGrid.notificationWidth
-                height: dashboardGrid.height
             }
 
             VolumeRail {
@@ -103,6 +127,7 @@ Item {
                 y: 0
                 width: dashboardGrid.volumeWidth
                 height: dashboardGrid.height
+                visible: root.currentPage === "dashboard"
             }
         }
     }
