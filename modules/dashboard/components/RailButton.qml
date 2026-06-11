@@ -8,12 +8,15 @@ Item {
     property string icon: ""
     property bool selected: false
     property color accent: ThemeService.primary
+    property bool stableSize: false
+    property int stableButtonSize: 40
+    property int iconPixelSize: 18
 
     Rectangle {
         anchors.centerIn: parent
-        width: root.selected ? 48 : 42
-        height: root.selected ? 48 : 42
-        radius: root.selected ? 18 : 16
+        width: root.stableSize ? root.stableButtonSize : (root.selected ? 48 : 42)
+        height: root.stableSize ? root.stableButtonSize : (root.selected ? 48 : 42)
+        radius: root.stableSize ? 16 : (root.selected ? 18 : 16)
         color: root.selected ? root.accent : ThemeService.surfaceBright
         opacity: root.selected ? 1.0 : 0.86
     }
@@ -22,7 +25,7 @@ Item {
         anchors.centerIn: parent
         text: root.icon
         font.family: ThemeService.iconFont
-        font.pixelSize: 18
+        font.pixelSize: root.iconPixelSize
         color: root.selected ? ThemeService.background : root.accent
     }
 }

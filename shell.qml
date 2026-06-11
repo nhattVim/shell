@@ -19,6 +19,7 @@ ShellRoot {
 
     // State managing the visibility of the app launcher
     property bool launcherActive: false
+    readonly property bool idleServiceLoaded: IdleService.enabled
 
     // Instantiates the Wallpaper background on all connected monitors
     Variants {
@@ -102,4 +103,5 @@ ShellRoot {
     Launcher {
         screen: Quickshell.screens[0]
     }
+
 }

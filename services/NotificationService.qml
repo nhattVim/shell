@@ -11,14 +11,19 @@ Singleton {
     property var list: []
     property var popupList: []
     property int idOffset: 0
+    property bool storeReady: false
+    property int count: 0
     readonly property string cacheDir: Quickshell.env("HOME") + "/.cache/nhattVim"
     readonly property string cachePath: cacheDir + "/notifications.json"
 
-    readonly property int count: list.length
-
     FileView {
         id: notificationStore
-        path: ""
+        path: root.cachePath
+
+        onLoaded: {
+            root.storeReady = true;
+            root.load();
+        }
     }
 
     Process {
@@ -26,8 +31,7 @@ Singleton {
         command: ["sh", "-c", "mkdir -p '" + root.cacheDir + "' && [ -f '" + root.cachePath + "' ] || printf '[]' > '" + root.cachePath + "'"]
         running: true
         onExited: {
-            notificationStore.path = root.cachePath;
-            Qt.callLater(root.load);
+            notificationStore.reload();
         }
     }
 
@@ -39,7 +43,7 @@ Singleton {
         bodyMarkupSupported: true
         bodySupported: true
         imageSupported: true
-        keepOnReload: false
+        keepOnReload: true
         persistenceSupported: true
 
         onNotification: notification => {
@@ -59,7 +63,7 @@ Singleton {
                 source: notification
             };
 
-            root.list = [item].concat(root.list).slice(0, 40);
+            root.setList([item].concat(root.list).slice(0, 40));
             root.save();
             if (!root.silent) {
                 root.showPopup(item);
@@ -87,9 +91,14 @@ Singleton {
     }
 
     function save() {
-        if (notificationStore.path === "") return;
+        if (!root.storeReady || notificationStore.path === "") return;
         const stored = root.list.map(toStoredItem).slice(0, 40);
         notificationStore.setText(JSON.stringify(stored, null, 2));
+    }
+
+    function setList(items) {
+        root.list = items;
+        root.count = items.length;
     }
 
     function showPopup(item) {
@@ -101,23 +110,21 @@ Singleton {
     }
 
     function load() {
-        if (notificationStore.path === "") return;
+        if (!root.storeReady || notificationStore.path === "") return;
         try {
             const text = notificationStore.text();
             if (!text || text.trim().length === 0) {
-                root.list = [];
                 root.idOffset = 0;
                 return;
             }
 
             const stored = JSON.parse(text);
             if (!Array.isArray(stored)) {
-                root.list = [];
                 root.idOffset = 0;
                 return;
             }
 
-            root.list = stored.filter(item => item && (item.summary || item.body)).map(item => ({
+            const restored = stored.filter(item => item && (item.summary || item.body)).map(item => ({
                 id: item.id,
                 appName: item.appName || "Application",
                 appIcon: item.appIcon || "",
@@ -129,6 +136,22 @@ Singleton {
                 source: null
             })).slice(0, 40);
 
+            const seen = {};
+            const merged = [];
+            root.list.concat(restored).forEach(item => {
+                const key = [
+                    item.appName || "",
+                    item.summary || "",
+                    item.body || "",
+                    item.time || 0
+                ].join("\u001f");
+                if (seen[key]) return;
+                seen[key] = true;
+                merged.push(item);
+            });
+            root.setList(merged.sort((a, b) => (b.time || 0) - (a.time || 0)).slice(0, 40));
+            console.log("[NotificationService] restored notifications:", root.count);
+
             let maxId = 0;
             root.list.forEach(item => {
                 if (item.id > maxId) maxId = item.id;
@@ -136,7 +159,6 @@ Singleton {
             root.idOffset = maxId + 1;
         } catch (e) {
             console.log("[NotificationService] No saved notifications or invalid cache:", e);
-            root.list = [];
             root.idOffset = 0;
         }
     }
@@ -153,7 +175,7 @@ Singleton {
     function discard(id) {
         const found = root.list.find(item => item.id === id);
         if (found && found.source) found.source.dismiss();
-        root.list = root.list.filter(item => item.id !== id);
+        root.setList(root.list.filter(item => item.id !== id));
         root.timeoutPopup(id);
         root.save();
     }
@@ -162,7 +184,7 @@ Singleton {
         root.list.forEach(item => {
             if (item.source) item.source.dismiss();
         });
-        root.list = [];
+        root.setList([]);
         root.popupList = [];
         root.save();
     }

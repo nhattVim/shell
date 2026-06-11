@@ -63,5 +63,9 @@ Item {
         function screenrecord(): void {
             ScreenRecorderService.toggle();
         }
+
+        function lock(): void {
+            LockscreenService.lock();
+        }
     }
 }

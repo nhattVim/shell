@@ -30,6 +30,8 @@ PanelFrame {
         anchors.fill: parent
         source: root.mediaSource
         fillMode: Image.PreserveAspectCrop
+        sourceSize.width: Math.max(1, width)
+        sourceSize.height: Math.max(1, height)
         visible: root.mediaSource !== ""
         asynchronous: true
         mipmap: true
@@ -122,6 +124,8 @@ PanelFrame {
                 anchors.fill: parent
                 source: root.mediaSource
                 fillMode: Image.PreserveAspectCrop
+                sourceSize.width: Math.max(1, width)
+                sourceSize.height: Math.max(1, height)
                 visible: root.mediaSource !== ""
                 asynchronous: true
                 mipmap: true

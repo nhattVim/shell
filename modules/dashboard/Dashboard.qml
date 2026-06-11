@@ -54,7 +54,7 @@ Item {
             readonly property int mediaWidth: 216
             readonly property int widgetsWidth: 272
             readonly property int notificationWidth: 268
-            readonly property int volumeWidth: 56
+            readonly property int volumeWidth: 168
 
             DashboardRail {
                 x: 0
