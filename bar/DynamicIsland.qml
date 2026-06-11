@@ -63,7 +63,6 @@ Item {
         width: {
             if (root.islandState === "powerMenu" || root.islandState === "batteryMenu") return ThemeService.islandMenuWidth; 
             if (root.islandState === "media") return ThemeService.islandDashboardWidth;
-            if (root.islandState === "volume") return ThemeService.islandVolumeWidth;
             return ThemeService.islandWidth;
         }
         
@@ -133,12 +132,6 @@ Item {
                             text: root.islandState === "windowTitle" ? (WindowService.activeWindowTitle || "Desktop") : ""
                             color: ThemeService.textBright; font.family: ThemeService.fontName; font.pixelSize: 11; font.weight: Font.Bold
                             visible: root.islandState === "windowTitle"; elide: Text.ElideRight; width: parent.width - 24; horizontalAlignment: Text.AlignHCenter
-                        }
-                        Row {
-                            anchors.centerIn: parent
-                            visible: root.islandState === "volume"; spacing: ThemeService.spacingSmall
-                            Text { text: AudioService.muted ? "" : ""; color: ThemeService.primary; font.pixelSize: 13 }
-                            Rectangle { width: 120; height: 4; radius: 2; color: ThemeService.surface; Rectangle { width: parent.width * AudioService.volume; height: 4; radius: 2; color: ThemeService.primary } }
                         }
                     }
 

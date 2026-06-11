@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell.Io
 import "bar"
 import "launcher"
+import "osd"
 import "services"
 import "components"
 
@@ -32,6 +33,26 @@ ShellRoot {
 
         function setWallpaperIndex(index: int): void {
             WallpaperService.setWallpaperByIndex(index);
+        }
+
+        function volumeUp(): void {
+            AudioService.changeVolume(0.05);
+        }
+
+        function volumeDown(): void {
+            AudioService.changeVolume(-0.05);
+        }
+
+        function toggleMute(): void {
+            AudioService.toggleMute();
+        }
+
+        function brightnessUp(): void {
+            BrightnessService.changeBrightness(0.05, null);
+        }
+
+        function brightnessDown(): void {
+            BrightnessService.changeBrightness(-0.05, null);
         }
     }
 
@@ -71,6 +92,16 @@ ShellRoot {
         model: Quickshell.screens
 
         ScreenFrame {
+            required property var modelData
+            targetScreen: modelData
+        }
+    }
+
+    // Instantiates the OSD on all connected monitors
+    Variants {
+        model: Quickshell.screens
+
+        OSD {
             required property var modelData
             targetScreen: modelData
         }

@@ -20,7 +20,7 @@ PanelWindow {
     exclusionMode: ExclusionMode.Ignore
 
     // Robust keyboard focus logic (Exclusive for menus to match ambxst)
-    readonly property bool islandOverlayOpen: islandState !== "windowTitle" && islandState !== "volume"
+    readonly property bool islandOverlayOpen: islandState !== "windowTitle"
 
     WlrLayershell.keyboardFocus: islandOverlayOpen ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
     WlrLayershell.layer: WlrLayer.Top
@@ -92,7 +92,6 @@ PanelWindow {
     }
 
     property string islandState: "windowTitle"
-    property bool startupCompleted: false
     function chooseActivePlayer() {
         const players = Mpris.players.values || [];
         if (players.length === 0) return null;
@@ -110,20 +109,6 @@ PanelWindow {
     }
 
     readonly property var activePlayer: chooseActivePlayer()
-
-    Timer {
-        id: startupTimer
-        interval: 1500
-        running: true
-        onTriggered: startupCompleted = true
-    }
-
-    // Global event handlers
-    Connections {
-        target: AudioService
-        function onVolumeChanged() { if (startupCompleted) dynamicIsland.triggerIsland("volume"); }
-        function onMutedChanged() { if (startupCompleted) dynamicIsland.triggerIsland("volume"); }
-    }
 
     function triggerPower(action) {
         if (action === "close") { barWindow.islandState = "windowTitle"; return; }

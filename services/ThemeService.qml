@@ -52,7 +52,6 @@ Singleton {
     readonly property int islandDashboardWidth: 940
     readonly property int islandDashboardHeight: 360
     readonly property int islandCompactHeight: 48
-    readonly property int islandVolumeWidth: 210
     readonly property int islandMenuWidth: 360
     readonly property int islandMenuHeight: 160
     readonly property int islandEarSize: 20
