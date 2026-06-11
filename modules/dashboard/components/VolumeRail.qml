@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Layouts
 import "../../../services"
 import "../../../config"
 
@@ -12,242 +11,125 @@ Item {
         color: ThemeService.background
     }
 
-    RowLayout {
-        anchors.fill: parent
-        anchors.margins: 7
-        spacing: 6
+    Rectangle {
+        id: brightnessButton
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: 12
+        width: 42
+        height: 42
+        radius: 16
+        color: ThemeService.surfaceBright
 
-        Item {
-            id: brightnessSlider
-
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-
-            readonly property real value: BrightnessService.ready ? BrightnessService.value : 0
-            readonly property real trackTop: 10
-            readonly property real trackBottom: brightnessButton.y - 8
-            readonly property real trackHeight: Math.max(1, trackBottom - trackTop)
-
-            Rectangle {
-                anchors.horizontalCenter: parent.horizontalCenter
-                y: brightnessSlider.trackTop
-                width: 4
-                height: brightnessSlider.trackHeight
-                radius: 2
-                color: ThemeService.surfaceBright
-            }
-
-            Rectangle {
-                anchors.horizontalCenter: parent.horizontalCenter
-                y: brightnessSlider.trackTop + brightnessSlider.trackHeight * (1 - brightnessSlider.value)
-                width: 4
-                height: brightnessSlider.trackHeight * brightnessSlider.value
-                radius: 2
-                color: ThemeService.primary
-            }
-
-            Rectangle {
-                anchors.horizontalCenter: parent.horizontalCenter
-                y: brightnessSlider.trackTop + brightnessSlider.trackHeight * (1 - brightnessSlider.value) - height / 2
-                width: 16
-                height: 5
-                radius: 2
-                color: ThemeService.textBright
-            }
-
-            MouseArea {
-                anchors {
-                    top: parent.top
-                    left: parent.left
-                    right: parent.right
-                    bottom: brightnessButton.top
-                }
-                cursorShape: Qt.PointingHandCursor
-                onPressed: mouse => updateBrightness(mouse.y)
-                onPositionChanged: mouse => {
-                    if (pressed) updateBrightness(mouse.y);
-                }
-                onWheel: wheel => {
-                    BrightnessService.changeBrightness(wheel.angleDelta.y > 0 ? 0.04 : -0.04, null);
-                    wheel.accepted = true;
-                }
-            }
-
-            RailButton {
-                id: brightnessButton
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.bottom: parent.bottom
-                width: 48
-                height: 48
-                icon: "󰃠"
-                selected: false
-                stableSize: true
-                stableButtonSize: 40
-                iconPixelSize: 16
-                accent: ThemeService.primary
-            }
+        Text {
+            anchors.centerIn: parent
+            text: "󰃠"
+            font.family: ThemeService.iconFont
+            font.pixelSize: 16
+            color: ThemeService.primary
         }
 
-        Item {
-            id: volumeSlider
-
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-
-            readonly property real value: AudioService.ready ? AudioService.volume : 0
-            readonly property real trackTop: 10
-            readonly property real trackBottom: speakerButton.y - 8
-            readonly property real trackHeight: Math.max(1, trackBottom - trackTop)
-
-            Rectangle {
-                anchors.horizontalCenter: parent.horizontalCenter
-                y: volumeSlider.trackTop
-                width: 4
-                height: volumeSlider.trackHeight
-                radius: 2
-                color: ThemeService.surfaceBright
-            }
-
-            Rectangle {
-                anchors.horizontalCenter: parent.horizontalCenter
-                y: volumeSlider.trackTop + volumeSlider.trackHeight * (1 - volumeSlider.value)
-                width: 4
-                height: volumeSlider.trackHeight * volumeSlider.value
-                radius: 2
-                color: ThemeService.primary
-            }
-
-            Rectangle {
-                anchors.horizontalCenter: parent.horizontalCenter
-                y: volumeSlider.trackTop + volumeSlider.trackHeight * (1 - volumeSlider.value) - height / 2
-                width: 16
-                height: 5
-                radius: 2
-                color: ThemeService.textBright
-            }
-
-            MouseArea {
-                anchors {
-                    top: parent.top
-                    left: parent.left
-                    right: parent.right
-                    bottom: speakerButton.top
-                }
-                cursorShape: Qt.PointingHandCursor
-                onPressed: mouse => updateVolume(mouse.y)
-                onPositionChanged: mouse => {
-                    if (pressed) updateVolume(mouse.y);
-                }
-                onWheel: wheel => {
-                    AudioService.changeVolume(wheel.angleDelta.y > 0 ? 0.04 : -0.04);
-                    wheel.accepted = true;
-                }
-            }
-
-            RailButton {
-                id: speakerButton
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.bottom: parent.bottom
-                width: 48
-                height: 48
-                icon: AudioService.muted ? "󰝟" : "󰕾"
-                selected: !AudioService.muted
-                stableSize: true
-                stableButtonSize: 40
-                iconPixelSize: 15
-                accent: ThemeService.primary
-
-                MouseArea {
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: AudioService.toggleMute()
-                }
-            }
-        }
-
-        Item {
-            id: micSlider
-
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-
-            readonly property real value: AudioService.micReady ? AudioService.micVolume : 0
-            readonly property real trackTop: 10
-            readonly property real trackBottom: micButton.y - 8
-            readonly property real trackHeight: Math.max(1, trackBottom - trackTop)
-
-            Rectangle {
-                anchors.horizontalCenter: parent.horizontalCenter
-                y: micSlider.trackTop
-                width: 4
-                height: micSlider.trackHeight
-                radius: 2
-                color: ThemeService.surfaceBright
-            }
-
-            Rectangle {
-                anchors.horizontalCenter: parent.horizontalCenter
-                y: micSlider.trackTop + micSlider.trackHeight * (1 - micSlider.value)
-                width: 4
-                height: micSlider.trackHeight * micSlider.value
-                radius: 2
-                color: ThemeService.primary
-            }
-
-            Rectangle {
-                anchors.horizontalCenter: parent.horizontalCenter
-                y: micSlider.trackTop + micSlider.trackHeight * (1 - micSlider.value) - height / 2
-                width: 16
-                height: 5
-                radius: 2
-                color: ThemeService.textBright
-            }
-
-            MouseArea {
-                anchors {
-                    top: parent.top
-                    left: parent.left
-                    right: parent.right
-                    bottom: micButton.top
-                }
-                cursorShape: Qt.PointingHandCursor
-                onPressed: mouse => updateMic(mouse.y)
-                onPositionChanged: mouse => {
-                    if (pressed) updateMic(mouse.y);
-                }
-                onWheel: wheel => {
-                    AudioService.changeMicVolume(wheel.angleDelta.y > 0 ? 0.04 : -0.04);
-                    wheel.accepted = true;
-                }
-            }
-
-            RailButton {
-                id: micButton
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.bottom: parent.bottom
-                width: 48
-                height: 48
-                icon: AudioService.micMuted ? "󰍭" : "󰍬"
-                selected: !AudioService.micMuted
-                stableSize: true
-                stableButtonSize: 40
-                iconPixelSize: 16
-                accent: ThemeService.primary
-
-                MouseArea {
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: AudioService.toggleMicMute()
-                }
+        MouseArea {
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onWheel: wheel => {
+                BrightnessService.changeBrightness(wheel.angleDelta.y > 0 ? 0.04 : -0.04, null);
+                wheel.accepted = true;
             }
         }
     }
 
-    function sliderValue(yPos, slider) {
-        const localY = Math.max(0, Math.min(slider.trackHeight, yPos - slider.trackTop));
-        return 1 - localY / slider.trackHeight;
+    Item {
+        id: brightnessSlider
+        anchors {
+            top: brightnessButton.bottom
+            topMargin: 13
+            bottom: volumeButton.top
+            bottomMargin: 14
+            left: parent.left
+            right: parent.right
+        }
+
+        readonly property real value: BrightnessService.ready ? BrightnessService.value : 0
+        readonly property real clampedValue: Math.max(0, Math.min(1, value))
+
+        Rectangle {
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: 5
+            height: parent.height
+            radius: 3
+            color: ThemeService.surfaceBright
+        }
+
+        Rectangle {
+            anchors.horizontalCenter: parent.horizontalCenter
+            y: parent.height * (1 - brightnessSlider.clampedValue)
+            width: 5
+            height: parent.height * brightnessSlider.clampedValue
+            radius: 3
+            color: ThemeService.primary
+        }
+
+        Rectangle {
+            anchors.horizontalCenter: parent.horizontalCenter
+            y: Math.max(0, Math.min(parent.height - height, parent.height * (1 - brightnessSlider.clampedValue) - height / 2))
+            width: 18
+            height: 5
+            radius: 3
+            color: ThemeService.textBright
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            preventStealing: true
+
+            onPressed: mouse => root.updateBrightness(mouse.y)
+            onPositionChanged: mouse => {
+                if (pressed) root.updateBrightness(mouse.y);
+            }
+            onWheel: wheel => {
+                BrightnessService.changeBrightness(wheel.angleDelta.y > 0 ? 0.04 : -0.04, null);
+                wheel.accepted = true;
+            }
+        }
+    }
+
+    RoundLevelButton {
+        id: volumeButton
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: micButton.top
+        anchors.bottomMargin: 8
+        width: 52
+        height: 52
+        value: AudioService.ready ? AudioService.volume : 0
+        muted: AudioService.muted
+        enabledControl: AudioService.ready
+        icon: AudioService.muted ? "󰝟" : "󰕾"
+
+        onControlValueChanged: value => AudioService.setVolume(value)
+        onToggleRequested: AudioService.toggleMute()
+    }
+
+    RoundLevelButton {
+        id: micButton
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 10
+        width: 52
+        height: 52
+        value: AudioService.micReady ? AudioService.micVolume : 0
+        muted: AudioService.micMuted
+        enabledControl: AudioService.micReady
+        icon: AudioService.micMuted ? "󰍭" : "󰍬"
+
+        onControlValueChanged: value => AudioService.setMicVolume(value)
+        onToggleRequested: AudioService.toggleMicMute()
+    }
+
+    function sliderValue(yPos, item) {
+        const localY = Math.max(0, Math.min(item.height, yPos));
+        return Math.round((1 - localY / Math.max(1, item.height)) * 100) / 100;
     }
 
     function updateBrightness(yPos) {
@@ -256,15 +138,112 @@ Item {
         }
     }
 
-    function updateVolume(yPos) {
-        if (AudioService.ready) {
-            AudioService.setVolume(sliderValue(yPos, volumeSlider));
-        }
-    }
+    component RoundLevelButton: Item {
+        id: control
 
-    function updateMic(yPos) {
-        if (AudioService.micReady) {
-            AudioService.setMicVolume(sliderValue(yPos, micSlider));
+        property real value: 0
+        property bool muted: false
+        property bool enabledControl: true
+        property string icon: ""
+        property real pressY: 0
+        property real pressValue: 0
+        property bool dragged: false
+
+        signal controlValueChanged(real value)
+        signal toggleRequested()
+
+        readonly property real clampedValue: Math.max(0, Math.min(1, value))
+        readonly property color activeColor: muted ? ThemeService.textDim : ThemeService.primary
+
+        Rectangle {
+            anchors.centerIn: parent
+            width: 42
+            height: 42
+            radius: 16
+            color: ThemeService.surfaceBright
+            opacity: control.enabledControl ? 1.0 : 0.55
+        }
+
+        Canvas {
+            id: progressCanvas
+            anchors.fill: parent
+            antialiasing: true
+
+            property real progress: control.clampedValue
+            property color progressColor: control.activeColor
+
+            onProgressChanged: requestPaint()
+            onProgressColorChanged: requestPaint()
+            onPaint: {
+                const ctx = getContext("2d");
+                ctx.reset();
+
+                const cx = width / 2;
+                const cy = height / 2;
+                const radius = Math.min(width, height) / 2 - 6;
+                const start = Math.PI * 0.72;
+                const sweep = Math.PI * 1.56;
+                const end = start + sweep;
+
+                ctx.lineWidth = 4;
+                ctx.lineCap = "round";
+                ctx.strokeStyle = Qt.rgba(ThemeService.foreground.r, ThemeService.foreground.g, ThemeService.foreground.b, 0.26);
+                ctx.beginPath();
+                ctx.arc(cx, cy, radius, start, end, false);
+                ctx.stroke();
+
+                if (progress > 0.005) {
+                    ctx.strokeStyle = progressColor;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, radius, start, start + sweep * progress, false);
+                    ctx.stroke();
+                }
+                const handleAngle = start + sweep * Math.max(0.01, progress);
+                const innerRadius = radius - 2;
+                const outerRadius = radius + 5;
+                ctx.strokeStyle = ThemeService.textBright;
+                ctx.beginPath();
+                ctx.moveTo(cx + innerRadius * Math.cos(handleAngle), cy + innerRadius * Math.sin(handleAngle));
+                ctx.lineTo(cx + outerRadius * Math.cos(handleAngle), cy + outerRadius * Math.sin(handleAngle));
+                ctx.stroke();
+            }
+        }
+
+        Text {
+            anchors.centerIn: parent
+            text: control.icon
+            font.family: ThemeService.iconFont
+            font.pixelSize: 15
+            color: control.muted ? ThemeService.textDim : ThemeService.textBright
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: control.enabledControl ? Qt.PointingHandCursor : Qt.ArrowCursor
+            preventStealing: true
+
+            onPressed: mouse => {
+                control.pressY = mouse.y;
+                control.pressValue = control.clampedValue;
+                control.dragged = false;
+            }
+            onPositionChanged: mouse => {
+                if (!pressed || !control.enabledControl) return;
+
+                const delta = (control.pressY - mouse.y) / 100;
+                if (Math.abs(delta) > 0.03) control.dragged = true;
+                control.controlValueChanged(Math.max(0, Math.min(1, control.pressValue + delta)));
+            }
+            onReleased: {
+                if (control.enabledControl && !control.dragged) control.toggleRequested();
+            }
+            onWheel: wheel => {
+                if (control.enabledControl) {
+                    control.controlValueChanged(Math.max(0, Math.min(1, control.clampedValue + (wheel.angleDelta.y > 0 ? 0.04 : -0.04))));
+                }
+                wheel.accepted = true;
+            }
         }
     }
 }
