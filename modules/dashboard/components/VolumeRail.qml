@@ -101,7 +101,7 @@ Item {
         anchors.bottom: micButton.top
         anchors.bottomMargin: 8
         width: 52
-        height: 52
+        height: 44
         value: AudioService.ready ? AudioService.volume : 0
         muted: AudioService.muted
         enabledControl: AudioService.ready
@@ -117,7 +117,7 @@ Item {
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 10
         width: 52
-        height: 52
+        height: 44
         value: AudioService.micReady ? AudioService.micVolume : 0
         muted: AudioService.micMuted
         enabledControl: AudioService.micReady
@@ -156,10 +156,8 @@ Item {
         readonly property color activeColor: muted ? ThemeService.textDim : ThemeService.primary
 
         Rectangle {
-            anchors.centerIn: parent
-            width: 42
-            height: 42
-            radius: 16
+            anchors.fill: parent
+            radius: 18
             color: ThemeService.surfaceBright
             opacity: control.enabledControl ? 1.0 : 0.55
         }
