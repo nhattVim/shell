@@ -85,6 +85,14 @@ PanelFrame {
 
             delegate: Rectangle {
                 required property var modelData
+                property bool iconLoadFailed: false
+                readonly property bool hasNotificationImage: (modelData.image || "") !== ""
+                readonly property bool hasAppIcon: (modelData.appIcon || "") !== ""
+                readonly property string iconSource: {
+                    if (hasNotificationImage) return modelData.image;
+                    if (hasAppIcon) return "image://icon/" + modelData.appIcon;
+                    return "";
+                }
 
                 width: notificationList.width
                 height: Math.max(68, content.implicitHeight + 18)
@@ -113,16 +121,27 @@ PanelFrame {
                         Image {
                             anchors.fill: parent
                             anchors.margins: 7
-                            source: modelData.appIcon
+                            source: iconLoadFailed ? "" : iconSource
                             fillMode: Image.PreserveAspectFit
-                            visible: modelData.appIcon !== ""
+                            visible: source !== ""
                             asynchronous: true
                             mipmap: true
+
+                            onStatusChanged: {
+                                if (status === Image.Error) {
+                                    if (modelData.image && modelData.appIcon && source !== "image://icon/" + modelData.appIcon) {
+                                        source = "image://icon/" + modelData.appIcon;
+                                    } else {
+                                        iconLoadFailed = true;
+                                        source = "";
+                                    }
+                                }
+                            }
                         }
 
                         Text {
                             anchors.centerIn: parent
-                            visible: modelData.appIcon === ""
+                            visible: iconSource === "" || iconLoadFailed
                             text: "󰂚"
                             font.family: ThemeService.iconFont
                             font.pixelSize: 17

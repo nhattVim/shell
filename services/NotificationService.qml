@@ -1,6 +1,7 @@
 pragma Singleton
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import Quickshell.Services.Notifications
 
 Singleton {
@@ -8,8 +9,26 @@ Singleton {
 
     property bool silent: false
     property var list: []
+    property int idOffset: 0
+    readonly property string cacheDir: Quickshell.env("HOME") + "/.cache/nhattVim"
+    readonly property string cachePath: cacheDir + "/notifications.json"
 
     readonly property int count: list.length
+
+    FileView {
+        id: notificationStore
+        path: ""
+    }
+
+    Process {
+        id: ensureCacheDir
+        command: ["sh", "-c", "mkdir -p '" + root.cacheDir + "' && [ -f '" + root.cachePath + "' ] || printf '[]' > '" + root.cachePath + "'"]
+        running: true
+        onExited: {
+            notificationStore.path = root.cachePath;
+            Qt.callLater(root.load);
+        }
+    }
 
     NotificationServer {
         id: server
@@ -28,7 +47,7 @@ Singleton {
             notification.tracked = true;
 
             const item = {
-                id: notification.id,
+                id: notification.id + root.idOffset,
                 appName: notification.appName || "Application",
                 appIcon: notification.appIcon || "",
                 image: notification.image || "",
@@ -40,6 +59,67 @@ Singleton {
             };
 
             root.list = [item].concat(root.list).slice(0, 40);
+            root.save();
+        }
+    }
+
+    function toStoredItem(item) {
+        return {
+            id: item.id,
+            appName: item.appName || "Application",
+            appIcon: item.appIcon || "",
+            image: item.image || "",
+            summary: item.summary || "",
+            body: item.body || "",
+            urgency: item.urgency,
+            time: item.time || Date.now()
+        };
+    }
+
+    function save() {
+        if (notificationStore.path === "") return;
+        const stored = root.list.map(toStoredItem).slice(0, 40);
+        notificationStore.setText(JSON.stringify(stored, null, 2));
+    }
+
+    function load() {
+        if (notificationStore.path === "") return;
+        try {
+            const text = notificationStore.text();
+            if (!text || text.trim().length === 0) {
+                root.list = [];
+                root.idOffset = 0;
+                return;
+            }
+
+            const stored = JSON.parse(text);
+            if (!Array.isArray(stored)) {
+                root.list = [];
+                root.idOffset = 0;
+                return;
+            }
+
+            root.list = stored.filter(item => item && (item.summary || item.body)).map(item => ({
+                id: item.id,
+                appName: item.appName || "Application",
+                appIcon: item.appIcon || "",
+                image: item.image || "",
+                summary: item.summary || "",
+                body: item.body || "",
+                urgency: item.urgency,
+                time: item.time || Date.now(),
+                source: null
+            })).slice(0, 40);
+
+            let maxId = 0;
+            root.list.forEach(item => {
+                if (item.id > maxId) maxId = item.id;
+            });
+            root.idOffset = maxId + 1;
+        } catch (e) {
+            console.log("[NotificationService] No saved notifications or invalid cache:", e);
+            root.list = [];
+            root.idOffset = 0;
         }
     }
 
@@ -56,6 +136,7 @@ Singleton {
         const found = root.list.find(item => item.id === id);
         if (found && found.source) found.source.dismiss();
         root.list = root.list.filter(item => item.id !== id);
+        root.save();
     }
 
     function clearAll() {
@@ -63,5 +144,6 @@ Singleton {
             if (item.source) item.source.dismiss();
         });
         root.list = [];
+        root.save();
     }
 }
