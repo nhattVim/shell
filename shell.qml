@@ -6,6 +6,7 @@ import "modules/launcher"
 import "modules/osd"
 import "modules/frame"
 import "modules/wallpaper"
+import "modules/notifications"
 import "services"
 
 ShellRoot {
@@ -64,6 +65,11 @@ ShellRoot {
             required property var modelData
             targetScreen: modelData
         }
+    }
+
+    // Instantiates floating notification popups on the primary monitor
+    NotificationPopup {
+        targetScreen: Quickshell.screens[0]
     }
 
     // Instantiates the app launcher overlay on the primary monitor

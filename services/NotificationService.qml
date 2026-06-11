@@ -9,6 +9,7 @@ Singleton {
 
     property bool silent: false
     property var list: []
+    property var popupList: []
     property int idOffset: 0
     readonly property string cacheDir: Quickshell.env("HOME") + "/.cache/nhattVim"
     readonly property string cachePath: cacheDir + "/notifications.json"
@@ -60,6 +61,15 @@ Singleton {
 
             root.list = [item].concat(root.list).slice(0, 40);
             root.save();
+            if (!root.silent) {
+                root.showPopup(item);
+            }
+        }
+    }
+
+    onSilentChanged: {
+        if (silent) {
+            popupList = [];
         }
     }
 
@@ -80,6 +90,14 @@ Singleton {
         if (notificationStore.path === "") return;
         const stored = root.list.map(toStoredItem).slice(0, 40);
         notificationStore.setText(JSON.stringify(stored, null, 2));
+    }
+
+    function showPopup(item) {
+        popupList = [item].concat(popupList.filter(popup => popup.id !== item.id)).slice(0, 5);
+    }
+
+    function timeoutPopup(id) {
+        popupList = popupList.filter(item => item.id !== id);
     }
 
     function load() {
@@ -136,6 +154,7 @@ Singleton {
         const found = root.list.find(item => item.id === id);
         if (found && found.source) found.source.dismiss();
         root.list = root.list.filter(item => item.id !== id);
+        root.timeoutPopup(id);
         root.save();
     }
 
@@ -144,6 +163,7 @@ Singleton {
             if (item.source) item.source.dismiss();
         });
         root.list = [];
+        root.popupList = [];
         root.save();
     }
 }

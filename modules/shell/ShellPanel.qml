@@ -20,7 +20,7 @@ PanelWindow {
 
     exclusionMode: ExclusionMode.Ignore
 
-    // Robust keyboard focus logic (Exclusive for menus to match ambxst)
+    // Robust keyboard focus logic
     readonly property bool islandOverlayOpen: islandState !== "windowTitle"
 
     WlrLayershell.keyboardFocus: islandOverlayOpen ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None

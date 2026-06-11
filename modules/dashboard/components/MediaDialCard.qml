@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell.Widgets
 import Quickshell.Services.Mpris
 import "../../../services"
 import "../../../config"
@@ -42,7 +43,7 @@ PanelFrame {
     }
 
     Canvas {
-        id: progressRing
+        id: cavaBand
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top
         anchors.topMargin: 22
@@ -51,26 +52,56 @@ PanelFrame {
         onPaint: {
             var ctx = getContext("2d");
             ctx.reset();
-            ctx.lineWidth = 6;
             ctx.lineCap = "round";
-            ctx.strokeStyle = ThemeService.foreground;
-            ctx.globalAlpha = 0.95;
+
+            var values = CavaService.bars;
+            var count = values.length;
+            var radius = 74;
+            var centerX = width / 2;
+            var centerY = 88;
+            var start = Math.PI * 1.11;
+            var end = Math.PI * 1.89;
+
+            ctx.strokeStyle = Qt.rgba(ThemeService.foreground.r, ThemeService.foreground.g, ThemeService.foreground.b, 0.28);
+            ctx.lineWidth = 3;
             ctx.beginPath();
-            ctx.arc(width / 2, 88, 74, Math.PI * 1.04, Math.PI * 1.96, false);
+            ctx.arc(centerX, centerY, radius, start, end, false);
             ctx.stroke();
 
-            var progress = root.hasPlayer && root.length > 0 ? Math.max(0, Math.min(1, root.position / root.length)) : 0.08;
-            ctx.strokeStyle = ThemeService.primary;
-            ctx.beginPath();
-            ctx.arc(width / 2, 88, 74, Math.PI * 1.04, Math.PI * (1.04 + 0.92 * progress), false);
-            ctx.stroke();
+            for (var i = 0; i < count; i++) {
+                var t = count <= 1 ? 0 : i / (count - 1);
+                var angle = start + (end - start) * t;
+                var level = root.isPlaying ? Math.max(0.04, values[i]) : 0.04;
+                var barLength = 7 + level * 28;
+                var inner = radius - barLength * 0.35;
+                var outer = radius + barLength * 0.65;
+                var x1 = centerX + Math.cos(angle) * inner;
+                var y1 = centerY + Math.sin(angle) * inner;
+                var x2 = centerX + Math.cos(angle) * outer;
+                var y2 = centerY + Math.sin(angle) * outer;
+
+                ctx.globalAlpha = 0.46 + level * 0.54;
+                ctx.lineWidth = 3.5;
+                ctx.strokeStyle = ThemeService.primary;
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        Connections {
+            target: CavaService
+            function onBarsChanged() { cavaBand.requestPaint(); }
         }
 
         Connections {
             target: root
-            function onPositionChanged() { progressRing.requestPaint(); }
-            function onLengthChanged() { progressRing.requestPaint(); }
+            function onIsPlayingChanged() { cavaBand.requestPaint(); }
         }
+
+        Component.onCompleted: requestPaint()
     }
 
     Item {
@@ -80,13 +111,12 @@ PanelFrame {
         width: 122
         height: 122
 
-        Rectangle {
+        ClippingRectangle {
             anchors.fill: parent
             radius: width / 2
             color: ThemeService.surfaceBright
             border.width: 1
             border.color: ThemeService.border
-            clip: true
 
             Image {
                 anchors.fill: parent
@@ -106,7 +136,7 @@ PanelFrame {
 
         Text {
             anchors.centerIn: parent
-            text: "AMBXST"
+            text: "nhattVim"
             font.family: ThemeService.fontName
             font.pixelSize: 14
             font.weight: Font.Black

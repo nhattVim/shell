@@ -211,12 +211,12 @@ PanelFrame {
 
             Text {
                 anchors.centerIn: parent
-                text: "AMBXST"
+                text: "no notifications"
                 font.family: ThemeService.fontName
                 font.pixelSize: 24
                 font.weight: Font.Black
                 color: ThemeService.textDim
-                rotation: -14
+                // rotation: -14
                 opacity: 0.72
             }
         }

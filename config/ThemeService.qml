@@ -45,7 +45,6 @@ Singleton {
     readonly property int barTotalHeight: 40
     readonly property int barMargin: 10
     readonly property int sideCapsuleHeight: 35
-    readonly property string launcherIcon: "file:///home/albedo/.config/quickshell/ambxst-lite/assets/ambxst/ambxst-icon.svg"
     
     // Dynamic Island specific
     readonly property int islandWidth: 285
