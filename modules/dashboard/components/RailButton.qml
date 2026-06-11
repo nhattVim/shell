@@ -10,7 +10,6 @@ Item {
     property color accent: ThemeService.primary
     property bool stableSize: false
     property int stableButtonSize: 40
-    property int iconPixelSize: 18
 
     Rectangle {
         anchors.centerIn: parent
@@ -25,7 +24,7 @@ Item {
         anchors.centerIn: parent
         text: root.icon
         font.family: ThemeService.iconFont
-        font.pixelSize: root.iconPixelSize
+        font.pixelSize: ThemeService.IconSizes
         color: root.selected ? ThemeService.background : root.accent
     }
 }

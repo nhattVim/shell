@@ -63,6 +63,7 @@ Singleton {
     readonly property int launcherSearchHeight: 40
 
     // Icon sizes
+    readonly property int iconSize: 15
     readonly property int iconSizeTray: 20
     readonly property int iconSizeLauncher: 18
 
