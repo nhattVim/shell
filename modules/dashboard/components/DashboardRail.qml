@@ -28,7 +28,7 @@ Item {
         RailButton {
             width: 48
             height: 48
-            icon: "󰕰"
+            icon: ""
             selected: root.currentPage === "dashboard"
             accent: root.accent
 

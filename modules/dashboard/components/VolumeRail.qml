@@ -5,6 +5,11 @@ import "../../../config"
 Item {
     id: root
 
+    readonly property int controlSize: 48
+    readonly property int controlRadius: 18
+    readonly property int edgeMargin: 1
+    readonly property int contentGap: 8
+
     Rectangle {
         anchors.fill: parent
         radius: 28
@@ -14,17 +19,17 @@ Item {
     Rectangle {
         id: brightnessButton
         anchors.horizontalCenter: parent.horizontalCenter
-        y: 12
-        width: 42
-        height: 42
-        radius: 16
+        y: root.edgeMargin
+        width: root.controlSize
+        height: root.controlSize
+        radius: root.controlRadius
         color: ThemeService.surfaceBright
 
         Text {
             anchors.centerIn: parent
             text: "󰃠"
             font.family: ThemeService.iconFont
-            font.pixelSize: 16
+            font.pixelSize: 18
             color: ThemeService.primary
         }
 
@@ -43,9 +48,9 @@ Item {
         id: brightnessSlider
         anchors {
             top: brightnessButton.bottom
-            topMargin: 13
+            topMargin: root.contentGap
             bottom: volumeButton.top
-            bottomMargin: 14
+            bottomMargin: root.contentGap
             left: parent.left
             right: parent.right
         }
@@ -99,9 +104,9 @@ Item {
         id: volumeButton
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: micButton.top
-        anchors.bottomMargin: 8
-        width: 52
-        height: 44
+        anchors.bottomMargin: root.contentGap
+        width: root.controlSize
+        height: root.controlSize
         value: AudioService.ready ? AudioService.volume : 0
         muted: AudioService.muted
         enabledControl: AudioService.ready
@@ -115,9 +120,9 @@ Item {
         id: micButton
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: 10
-        width: 52
-        height: 44
+        anchors.bottomMargin: root.edgeMargin
+        width: root.controlSize
+        height: root.controlSize
         value: AudioService.micReady ? AudioService.micVolume : 0
         muted: AudioService.micMuted
         enabledControl: AudioService.micReady
@@ -157,7 +162,7 @@ Item {
 
         Rectangle {
             anchors.fill: parent
-            radius: 18
+            radius: root.controlRadius
             color: ThemeService.surfaceBright
             opacity: control.enabledControl ? 1.0 : 0.55
         }
@@ -211,7 +216,7 @@ Item {
             anchors.centerIn: parent
             text: control.icon
             font.family: ThemeService.iconFont
-            font.pixelSize: 15
+            font.pixelSize: 18
             color: control.muted ? ThemeService.textDim : ThemeService.textBright
         }
 
