@@ -31,7 +31,6 @@ Item {
 
     Item {
         anchors.fill: parent
-        anchors.margins: 14
 
         PanelFrame {
             id: summaryPanel
@@ -135,7 +134,7 @@ Item {
             id: detailPanel
             anchors {
                 left: summaryPanel.right
-                leftMargin: 10
+                leftMargin: 8
                 right: parent.right
                 top: parent.top
                 bottom: parent.bottom

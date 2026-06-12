@@ -31,14 +31,13 @@ Item {
 
     Item {
         anchors.fill: parent
-        anchors.margins: 14
 
         Row {
             anchors.fill: parent
-            spacing: 10
+            spacing: 8
 
             PerformanceFrame {
-                width: (parent.width - 20) / 3
+                width: (parent.width - 16) / 3
                 height: parent.height
                 title: "System"
                 icon: "󰍛"
@@ -89,7 +88,7 @@ Item {
             }
 
             PerformanceFrame {
-                width: (parent.width - 20) / 3
+                width: (parent.width - 16) / 3
                 height: parent.height
                 title: "Memory & Storage"
                 icon: "󰘚"
@@ -137,7 +136,7 @@ Item {
             }
 
             PerformanceFrame {
-                width: (parent.width - 20) / 3
+                width: (parent.width - 16) / 3
                 height: parent.height
                 title: "Graphics & Power"
                 icon: "󰢮"
