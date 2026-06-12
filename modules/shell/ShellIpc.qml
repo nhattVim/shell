@@ -16,6 +16,19 @@ Item {
             root.shellRoot.launcherActive = !root.shellRoot.launcherActive;
         }
 
+        function toggleClipboard(): void {
+            ClipboardService.refresh();
+            root.shellRoot.clipboardActive = !root.shellRoot.clipboardActive;
+        }
+
+        function clipboardDelete(id: string): void {
+            ClipboardService.deleteById(id);
+        }
+
+        function clipboardClear(): void {
+            ClipboardService.clearAll();
+        }
+
         function nextWallpaper(): void {
             WallpaperService.nextWallpaper();
         }

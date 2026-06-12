@@ -3,6 +3,7 @@ import Quickshell
 import QtQuick
 import "modules/shell"
 import "modules/launcher"
+import "modules/clipboard"
 import "modules/osd"
 import "modules/frame"
 import "modules/wallpaper"
@@ -19,6 +20,7 @@ ShellRoot {
 
     // State managing the visibility of the app launcher
     property bool launcherActive: false
+    property bool clipboardActive: false
     readonly property bool idleServiceLoaded: IdleService.enabled
 
     // Instantiates the Wallpaper background on all connected monitors
@@ -101,6 +103,12 @@ ShellRoot {
 
     // Instantiates the app launcher overlay on the primary monitor
     Launcher {
+        screen: Quickshell.screens[0]
+    }
+
+    // Instantiates the clipboard history overlay on the primary monitor
+    Clipboard {
+        shellRoot: shellRoot
         screen: Quickshell.screens[0]
     }
 
