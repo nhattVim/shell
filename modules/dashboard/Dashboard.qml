@@ -120,6 +120,12 @@ Item {
                     visible: root.currentPage === "weather"
                     backgroundSource: root.mediaSource
                 }
+
+                PerformancePage {
+                    anchors.fill: parent
+                    visible: root.currentPage === "performance"
+                    backgroundSource: root.mediaSource
+                }
             }
 
             VolumeRail {

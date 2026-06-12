@@ -58,9 +58,16 @@ Item {
         RailButton {
             width: 48
             height: 36
-            icon: "󰂚"
-            selected: root.currentPage === "extra"
+            icon: "󰍛"
+            selected: root.currentPage === "performance"
             accent: root.accent
+
+            MouseArea {
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.pageRequested("performance")
+            }
         }
     }
 
