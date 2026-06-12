@@ -9,7 +9,7 @@ PanelFrame {
 
     RowLayout {
         anchors.fill: parent
-        anchors.margins: 4
+        anchors.margins: 5
         spacing: 4
 
         TogglePill {

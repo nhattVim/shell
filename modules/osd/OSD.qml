@@ -42,6 +42,22 @@ PanelWindow {
         return "󰕾";
     }
 
+    function micIcon(muted) {
+        return muted ? "󰍭" : "󰍬";
+    }
+
+    function indicatorIcon() {
+        if (root.osdIndicator === "brightness") return "󰃠";
+        if (root.osdIndicator === "mic") return root.micIcon(root.osdMuted);
+        return root.volumeIcon(root.osdValue, root.osdMuted);
+    }
+
+    function indicatorLabel() {
+        if (root.osdIndicator === "brightness") return "Brightness";
+        if (root.osdIndicator === "mic") return "Microphone";
+        return "Volume";
+    }
+
     function show(indicator, value, muted) {
         if (!startupCompleted) return;
         root.osdIndicator = indicator;
@@ -75,7 +91,7 @@ PanelWindow {
                 spacing: 14
 
                 Text {
-                    text: root.osdIndicator === "brightness" ? "󰃠" : root.volumeIcon(root.osdValue, root.osdMuted)
+                    text: root.indicatorIcon()
                     font.family: ThemeService.iconFont
                     font.pixelSize: 22
                     color: root.osdMuted ? ThemeService.textDim : ThemeService.primary
@@ -98,7 +114,7 @@ PanelWindow {
                         spacing: 8
 
                         Text {
-                            text: root.osdIndicator === "brightness" ? "Brightness" : "Volume"
+                            text: root.indicatorLabel()
                             color: ThemeService.textBright
                             font.family: ThemeService.fontName
                             font.pixelSize: 13
@@ -162,6 +178,12 @@ PanelWindow {
         }
         function onMutedChanged() {
             root.show("volume", AudioService.volume, AudioService.muted);
+        }
+        function onMicVolumeChanged() {
+            root.show("mic", AudioService.micVolume, AudioService.micMuted);
+        }
+        function onMicMutedChanged() {
+            root.show("mic", AudioService.micVolume, AudioService.micMuted);
         }
     }
 
