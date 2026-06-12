@@ -39,8 +39,6 @@ Item {
             PerformanceFrame {
                 width: (parent.width - 16) / 3
                 height: parent.height
-                title: "System"
-                icon: "󰍛"
 
                 GaugeCard {
                     width: parent.width
@@ -90,8 +88,6 @@ Item {
             PerformanceFrame {
                 width: (parent.width - 16) / 3
                 height: parent.height
-                title: "Memory & Storage"
-                icon: "󰘚"
 
                 GaugeCard {
                     width: parent.width
@@ -138,8 +134,6 @@ Item {
             PerformanceFrame {
                 width: (parent.width - 16) / 3
                 height: parent.height
-                title: "Graphics & Power"
-                icon: "󰢮"
 
                 GaugeCard {
                     width: parent.width
@@ -191,8 +185,6 @@ Item {
     component PerformanceFrame: PanelFrame {
         id: frame
 
-        property string title: ""
-        property string icon: ""
         default property alias content: contentColumn.data
 
         radius: 18
@@ -204,45 +196,11 @@ Item {
             anchors.fill: parent
             anchors.margins: 10
 
-            Rectangle {
-                id: frameHeader
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
-                height: 36
-                radius: 18
-                color: ThemeService.background
-
-                Text {
-                    anchors.left: parent.left
-                    anchors.verticalCenter: parent.verticalCenter
-                    anchors.leftMargin: 14
-                    text: frame.title
-                    color: ThemeService.textBright
-                    font.family: ThemeService.fontName
-                    font.pixelSize: 13
-                    font.weight: Font.Bold
-                    elide: Text.ElideRight
-                    width: parent.width - 48
-                }
-
-                Text {
-                    anchors.right: parent.right
-                    anchors.verticalCenter: parent.verticalCenter
-                    anchors.rightMargin: 14
-                    text: frame.icon
-                    color: ThemeService.primary
-                    font.family: ThemeService.iconFont
-                    font.pixelSize: 17
-                }
-            }
-
             Flickable {
                 id: frameScroll
                 anchors.left: parent.left
                 anchors.right: parent.right
-                anchors.top: frameHeader.bottom
-                anchors.topMargin: 10
+                anchors.top: parent.top
                 anchors.bottom: parent.bottom
                 clip: true
                 contentWidth: width
