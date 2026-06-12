@@ -29,6 +29,11 @@ Item {
             ClipboardService.clearAll();
         }
 
+        function toggleWallpaperPicker(): void {
+            WallpaperService.refresh();
+            root.shellRoot.wallpaperPickerActive = !root.shellRoot.wallpaperPickerActive;
+        }
+
         function nextWallpaper(): void {
             WallpaperService.nextWallpaper();
         }

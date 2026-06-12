@@ -11,6 +11,12 @@ Singleton {
     property int currentIndex: -1
     property string currentWallpaper: (currentIndex >= 0 && currentIndex < wallpaperPaths.length) ? wallpaperPaths[currentIndex] : ""
 
+    function refresh() {
+        if (!scanWallpapers.running) {
+            scanWallpapers.running = true;
+        }
+    }
+
     // Scans wall dir for files
     Process {
         id: scanWallpapers
