@@ -52,8 +52,8 @@ PanelWindow {
 
     StyledRect {
         id: clipboardCard
-        width: 520
-        height: 400
+        width: 580
+        height: 450
         anchors.centerIn: parent
         clip: true
         rectColor: ThemeService.background
@@ -73,7 +73,7 @@ PanelWindow {
             Rectangle {
                 id: searchBox
                 width: parent.width
-                height: 40
+                height: 42
                 radius: 14
                 color: ThemeService.surface
                 border.width: 1
@@ -158,7 +158,7 @@ PanelWindow {
             ListView {
                 id: clipboardList
                 width: parent.width
-                height: parent.height - 76
+                height: parent.height - 80
                 clip: true
                 spacing: 6
                 model: root.results
@@ -170,7 +170,7 @@ PanelWindow {
                     required property var modelData
 
                     width: clipboardList.width
-                    height: 46
+                    height: 50
                     radius: 13
                     color: index === root.selectedIndex
                         ? Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.15)
