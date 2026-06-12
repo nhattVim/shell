@@ -29,6 +29,8 @@ PanelWindow {
     property string searchText: ""
     property var results: filterWallpapers(searchText)
     property int selectedIndex: 0
+    readonly property string selectedPath: selectedIndex >= 0 && selectedIndex < results.length ? results[selectedIndex] : ""
+    readonly property bool hasWallpapers: WallpaperService.wallpaperPaths.length > 0
 
     onVisibleChanged: {
         if (visible) {
@@ -52,13 +54,14 @@ PanelWindow {
 
     StyledRect {
         id: pickerCard
-        width: 880
-        height: 600
+        width: Math.min(980, root.width - 64)
+        height: Math.min(580, root.height - 64)
         anchors.centerIn: parent
+        radius: 22
         clip: true
         rectColor: ThemeService.background
-        rectOpacity: ThemeService.bgOpacityHigh
-        borderOpacityValue: ThemeService.borderOpacity
+        rectOpacity: 0.94
+        borderOpacityValue: 0.18
 
         MouseArea {
             anchors.fill: parent
@@ -67,17 +70,17 @@ PanelWindow {
 
         Column {
             anchors.fill: parent
-            anchors.margins: 18
-            spacing: 14
+            anchors.margins: 16
+            spacing: 12
 
             Row {
                 width: parent.width
-                height: 38
+                height: 42
                 spacing: 12
 
                 Rectangle {
-                    width: 38
-                    height: 38
+                    width: 42
+                    height: 42
                     radius: 14
                     color: Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.16)
 
@@ -86,287 +89,474 @@ PanelWindow {
                         text: "󰸉"
                         color: ThemeService.primary
                         font.family: ThemeService.iconFont
-                        font.pixelSize: 19
+                        font.pixelSize: 20
                     }
                 }
 
                 Column {
                     anchors.verticalCenter: parent.verticalCenter
-                    width: parent.width - 190
+                    width: 184
                     spacing: 2
 
                     Text {
-                        text: "Wallpaper Picker"
+                        width: parent.width
+                        text: "Wallpapers"
                         color: ThemeService.textBright
                         font.family: ThemeService.fontName
-                        font.pixelSize: 16
+                        font.pixelSize: 17
                         font.weight: Font.DemiBold
+                        elide: Text.ElideRight
                     }
 
                     Text {
-                        text: root.results.length + " wallpaper" + (root.results.length === 1 ? "" : "s") + " available"
+                        width: parent.width
+                        text: root.results.length + " shown / " + WallpaperService.wallpaperPaths.length
                         color: ThemeService.textDim
                         font.family: ThemeService.fontName
                         font.pixelSize: 11
+                        elide: Text.ElideRight
                     }
                 }
 
                 Rectangle {
+                    id: searchBox
                     anchors.verticalCenter: parent.verticalCenter
-                    width: 128
-                    height: 30
-                    radius: 11
+                    width: parent.width - 184 - 42 - 24
+                    height: 40
+                    radius: 14
                     color: ThemeService.surface
+                    border.width: 1
+                    border.color: searchInput.activeFocus
+                        ? Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.66)
+                        : Qt.rgba(ThemeService.border.r, ThemeService.border.g, ThemeService.border.b, 0.12)
 
-                    Text {
-                        anchors.centerIn: parent
-                        text: "Enter apply · Esc close"
-                        color: ThemeService.textDim
-                        font.family: ThemeService.fontName
-                        font.pixelSize: 10
+                    Row {
+                        anchors.fill: parent
+                        anchors.leftMargin: 14
+                        anchors.rightMargin: 14
+                        spacing: 10
+
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: "󰍉"
+                            color: searchInput.activeFocus ? ThemeService.primary : ThemeService.textDim
+                            font.family: ThemeService.iconFont
+                            font.pixelSize: 16
+                        }
+
+                        TextInput {
+                            id: searchInput
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: parent.width - 28
+                            color: ThemeService.foreground
+                            selectionColor: Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.35)
+                            selectedTextColor: ThemeService.textBright
+                            font.family: ThemeService.fontName
+                            font.pixelSize: 13
+                            selectByMouse: true
+                            clip: true
+
+                            Text {
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: parent.width
+                                text: "Search name or path..."
+                                color: ThemeService.textDim
+                                font.family: ThemeService.fontName
+                                font.pixelSize: 13
+                                visible: parent.text.length === 0
+                                elide: Text.ElideRight
+                            }
+
+                            onTextChanged: {
+                                root.searchText = text;
+                                root.selectedIndex = 0;
+                            }
+
+                            Keys.onPressed: event => {
+                                const count = wallpaperGrid.count;
+                                const columns = Math.max(1, Math.floor(wallpaperGrid.width / wallpaperGrid.cellWidth));
+
+                                if (event.key === Qt.Key_Tab && !(event.modifiers & Qt.ShiftModifier)) {
+                                    root.selectNext();
+                                    event.accepted = true;
+                                } else if (event.key === Qt.Key_Backtab || (event.key === Qt.Key_Tab && (event.modifiers & Qt.ShiftModifier))) {
+                                    root.selectPrevious();
+                                    event.accepted = true;
+                                } else if (event.key === Qt.Key_Right) {
+                                    root.selectNext();
+                                    event.accepted = true;
+                                } else if (event.key === Qt.Key_Left) {
+                                    root.selectPrevious();
+                                    event.accepted = true;
+                                } else if (event.key === Qt.Key_Down) {
+                                    if (count > 0) root.selectedIndex = Math.min(count - 1, root.selectedIndex + columns);
+                                    event.accepted = true;
+                                } else if (event.key === Qt.Key_Up) {
+                                    if (count > 0) root.selectedIndex = Math.max(0, root.selectedIndex - columns);
+                                    event.accepted = true;
+                                } else if (event.key === Qt.Key_Enter || event.key === Qt.Key_Return) {
+                                    root.applySelected();
+                                    event.accepted = true;
+                                } else if (event.key === Qt.Key_Escape) {
+                                    shellRoot.wallpaperPickerActive = false;
+                                    event.accepted = true;
+                                }
+                            }
+                        }
                     }
                 }
             }
 
             Rectangle {
-                id: searchBox
                 width: parent.width
-                height: 46
-                radius: 16
-                color: ThemeService.surface
-                border.width: 1
-                border.color: searchInput.activeFocus
-                    ? Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.72)
-                    : Qt.rgba(ThemeService.border.r, ThemeService.border.g, ThemeService.border.b, 0.14)
-
-                Row {
-                    anchors.fill: parent
-                    anchors.leftMargin: 15
-                    anchors.rightMargin: 15
-                    spacing: 11
-
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: "󰍉"
-                        color: searchInput.activeFocus ? ThemeService.primary : ThemeService.textDim
-                        font.family: ThemeService.iconFont
-                        font.pixelSize: 17
-                    }
-
-                    TextInput {
-                        id: searchInput
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: parent.width - 32
-                        color: ThemeService.foreground
-                        selectionColor: Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.35)
-                        selectedTextColor: ThemeService.textBright
-                        font.family: ThemeService.fontName
-                        font.pixelSize: 13
-                        selectByMouse: true
-                        clip: true
-
-                        Text {
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: parent.width
-                            text: "Search wallpapers..."
-                            color: ThemeService.textDim
-                            font.family: ThemeService.fontName
-                            font.pixelSize: 13
-                            visible: parent.text.length === 0
-                            elide: Text.ElideRight
-                        }
-
-                        onTextChanged: {
-                            root.searchText = text;
-                            root.selectedIndex = 0;
-                        }
-
-                        Keys.onPressed: event => {
-                            const count = wallpaperGrid.count;
-                            const columns = Math.max(1, Math.floor(wallpaperGrid.width / wallpaperGrid.cellWidth));
-
-                            if (event.key === Qt.Key_Tab && !(event.modifiers & Qt.ShiftModifier)) {
-                                root.selectNext();
-                                event.accepted = true;
-                            } else if (event.key === Qt.Key_Backtab || (event.key === Qt.Key_Tab && (event.modifiers & Qt.ShiftModifier))) {
-                                root.selectPrevious();
-                                event.accepted = true;
-                            } else if (event.key === Qt.Key_Right) {
-                                root.selectNext();
-                                event.accepted = true;
-                            } else if (event.key === Qt.Key_Left) {
-                                root.selectPrevious();
-                                event.accepted = true;
-                            } else if (event.key === Qt.Key_Down) {
-                                if (count > 0) root.selectedIndex = Math.min(count - 1, root.selectedIndex + columns);
-                                event.accepted = true;
-                            } else if (event.key === Qt.Key_Up) {
-                                if (count > 0) root.selectedIndex = Math.max(0, root.selectedIndex - columns);
-                                event.accepted = true;
-                            } else if (event.key === Qt.Key_Enter || event.key === Qt.Key_Return) {
-                                root.applySelected();
-                                event.accepted = true;
-                            } else if (event.key === Qt.Key_Escape) {
-                                shellRoot.wallpaperPickerActive = false;
-                                event.accepted = true;
-                            }
-                        }
-                    }
-                }
+                height: 1
+                color: Qt.rgba(ThemeService.border.r, ThemeService.border.g, ThemeService.border.b, 0.1)
             }
 
-            GridView {
-                id: wallpaperGrid
+            Row {
                 width: parent.width
-                height: parent.height - 130
-                clip: true
-                model: root.results
-                currentIndex: root.selectedIndex
-                boundsBehavior: Flickable.StopAtBounds
-                cellWidth: width / 4
-                cellHeight: 138
+                height: parent.height - 42 - 1 - 24
+                spacing: 14
 
-                delegate: Item {
-                    required property int index
-                    required property string modelData
+                Rectangle {
+                    id: previewPanel
+                    width: 300
+                    height: parent.height
+                    radius: 20
+                    color: ThemeService.surface
+                    border.width: 1
+                    border.color: Qt.rgba(ThemeService.border.r, ThemeService.border.g, ThemeService.border.b, 0.12)
+                    clip: true
 
-                    width: wallpaperGrid.cellWidth
-                    height: wallpaperGrid.cellHeight
+                    Image {
+                        anchors.fill: parent
+                        source: root.selectedPath !== "" ? "file://" + root.selectedPath : ""
+                        fillMode: Image.PreserveAspectCrop
+                        sourceSize.width: 900
+                        sourceSize.height: 1200
+                        asynchronous: true
+                        cache: true
+                        visible: root.selectedPath !== ""
+                    }
 
                     Rectangle {
-                        id: tile
                         anchors.fill: parent
-                        anchors.margins: 6
-                        radius: 18
-                        color: ThemeService.surface
-                        clip: true
-                        scale: index === root.selectedIndex ? 1.0 : 0.985
+                        color: Qt.rgba(ThemeService.background.r, ThemeService.background.g, ThemeService.background.b, root.selectedPath === "" ? 0.0 : 0.1)
+                    }
 
-                        border.width: index === root.selectedIndex ? 2 : 1
-                        border.color: index === root.selectedIndex
-                            ? ThemeService.primary
-                            : modelData === WallpaperService.currentWallpaper
-                                ? Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.56)
-                                : Qt.rgba(ThemeService.border.r, ThemeService.border.g, ThemeService.border.b, 0.12)
-
-                        Image {
-                            anchors.fill: parent
-                            source: "file://" + modelData
-                            fillMode: Image.PreserveAspectCrop
-                            sourceSize.width: 320
-                            sourceSize.height: 200
-                            asynchronous: true
-                            cache: true
-                        }
+                    Column {
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.bottom: parent.bottom
+                        anchors.margins: 14
+                        spacing: 10
 
                         Rectangle {
-                            anchors.fill: parent
-                            color: itemMouse.containsMouse || index === root.selectedIndex
-                                ? Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.14)
-                                : "transparent"
-                        }
-
-                        Rectangle {
-                            anchors.left: parent.left
-                            anchors.right: parent.right
-                            anchors.bottom: parent.bottom
-                            height: 42
-                            color: Qt.rgba(ThemeService.background.r, ThemeService.background.g, ThemeService.background.b, 0.74)
-
-                            Column {
-                                anchors.left: parent.left
-                                anchors.right: parent.right
-                                anchors.verticalCenter: parent.verticalCenter
-                                anchors.leftMargin: 12
-                                anchors.rightMargin: 12
-                                spacing: 2
-
-                                Text {
-                                    width: parent.width
-                                    text: root.fileName(modelData)
-                                    color: ThemeService.textBright
-                                    font.family: ThemeService.fontName
-                                    font.pixelSize: 11
-                                    font.weight: Font.DemiBold
-                                    elide: Text.ElideRight
-                                }
-
-                                Text {
-                                    width: parent.width
-                                    text: modelData === WallpaperService.currentWallpaper ? "Current wallpaper" : "Click to apply"
-                                    color: modelData === WallpaperService.currentWallpaper ? ThemeService.primary : ThemeService.textDim
-                                    font.family: ThemeService.fontName
-                                    font.pixelSize: 9
-                                    elide: Text.ElideRight
-                                }
-                            }
-                        }
-
-                        Rectangle {
-                            anchors.right: parent.right
-                            anchors.top: parent.top
-                            anchors.margins: 9
-                            width: 28
-                            height: 24
-                            radius: 9
-                            visible: modelData === WallpaperService.currentWallpaper
+                            width: currentBadgeText.implicitWidth + 22
+                            height: 28
+                            radius: 10
+                            visible: root.selectedPath === WallpaperService.currentWallpaper && root.selectedPath !== ""
                             color: ThemeService.primary
 
                             Text {
+                                id: currentBadgeText
                                 anchors.centerIn: parent
-                                text: "󰄬"
+                                text: "󰄬 Current"
                                 color: ThemeService.background
-                                font.family: ThemeService.iconFont
-                                font.pixelSize: 13
-                            }
-                        }
-
-                        Rectangle {
-                            anchors.left: parent.left
-                            anchors.top: parent.top
-                            anchors.margins: 9
-                            width: 30
-                            height: 24
-                            radius: 9
-                            visible: index === root.selectedIndex
-                            color: Qt.rgba(ThemeService.background.r, ThemeService.background.g, ThemeService.background.b, 0.72)
-                            border.width: 1
-                            border.color: ThemeService.primary
-
-                            Text {
-                                anchors.centerIn: parent
-                                text: index + 1
-                                color: ThemeService.primary
                                 font.family: ThemeService.fontName
                                 font.pixelSize: 11
                                 font.weight: Font.Bold
                             }
                         }
 
-                        MouseArea {
-                            id: itemMouse
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onEntered: root.selectedIndex = index
-                            onClicked: {
-                                WallpaperService.setWallpaperByPath(modelData);
-                                shellRoot.wallpaperPickerActive = false;
+                        Text {
+                            width: parent.width
+                            text: root.selectedPath !== "" ? root.fileName(root.selectedPath) : "No wallpaper selected"
+                            color: ThemeService.textBright
+                            font.family: ThemeService.fontName
+                            font.pixelSize: 16
+                            font.weight: Font.DemiBold
+                            elide: Text.ElideRight
+                        }
+
+                        Text {
+                            width: parent.width
+                            text: root.selectedPath !== "" ? root.selectedPath : WallpaperService.wallpaperDir
+                            color: ThemeService.foreground
+                            opacity: 0.72
+                            font.family: ThemeService.fontName
+                            font.pixelSize: 11
+                            wrapMode: Text.Wrap
+                            maximumLineCount: 2
+                            elide: Text.ElideRight
+                        }
+
+                        Row {
+                            width: parent.width
+                            height: 36
+                            spacing: 8
+
+                            Rectangle {
+                                width: 132
+                                height: 36
+                                radius: 12
+                                color: root.selectedPath !== "" ? ThemeService.primary : ThemeService.surfaceBright
+                                opacity: root.selectedPath !== "" ? 1.0 : 0.6
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "Apply"
+                                    color: root.selectedPath !== "" ? ThemeService.background : ThemeService.textDim
+                                    font.family: ThemeService.fontName
+                                    font.pixelSize: 12
+                                    font.weight: Font.DemiBold
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    enabled: root.selectedPath !== ""
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: root.applySelected()
+                                }
                             }
+
+                            Rectangle {
+                                width: 96
+                                height: 36
+                                radius: 12
+                                color: Qt.rgba(ThemeService.surfaceBright.r, ThemeService.surfaceBright.g, ThemeService.surfaceBright.b, closeMouse.containsMouse ? 0.78 : 0.52)
+                                border.width: 1
+                                border.color: Qt.rgba(ThemeService.border.r, ThemeService.border.g, ThemeService.border.b, 0.1)
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "Close"
+                                    color: ThemeService.foreground
+                                    font.family: ThemeService.fontName
+                                    font.pixelSize: 12
+                                }
+
+                                MouseArea {
+                                    id: closeMouse
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: shellRoot.wallpaperPickerActive = false
+                                }
+                            }
+                        }
+                    }
+
+                    Column {
+                        anchors.centerIn: parent
+                        spacing: 10
+                        visible: root.selectedPath === ""
+
+                        Text {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: "󰋩"
+                            color: ThemeService.textDim
+                            font.family: ThemeService.iconFont
+                            font.pixelSize: 38
+                        }
+
+                        Text {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: root.hasWallpapers ? "No match" : "No wallpapers found"
+                            color: ThemeService.textDim
+                            font.family: ThemeService.fontName
+                            font.pixelSize: 13
                         }
                     }
                 }
 
-                onCurrentIndexChanged: positionViewAtIndex(currentIndex, GridView.Contain)
+                Item {
+                    width: parent.width - previewPanel.width - parent.spacing
+                    height: parent.height
+
+                    GridView {
+                        id: wallpaperGrid
+                        anchors.fill: parent
+                        clip: true
+                        model: root.results
+                        currentIndex: root.selectedIndex
+                        boundsBehavior: Flickable.StopAtBounds
+                        cellWidth: Math.max(132, Math.floor(width / 4))
+                        cellHeight: 96
+
+                        delegate: Item {
+                            required property int index
+                            required property string modelData
+
+                            width: wallpaperGrid.cellWidth
+                            height: wallpaperGrid.cellHeight
+
+                            Rectangle {
+                                id: tile
+                                anchors.fill: parent
+                                anchors.margins: 5
+                                radius: 15
+                                color: ThemeService.surface
+                                clip: true
+                                scale: index === root.selectedIndex ? 1.0 : 0.985
+
+                                border.width: index === root.selectedIndex || modelData === WallpaperService.currentWallpaper ? 2 : 1
+                                border.color: index === root.selectedIndex
+                                    ? ThemeService.primary
+                                    : modelData === WallpaperService.currentWallpaper
+                                        ? Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.52)
+                                        : Qt.rgba(ThemeService.border.r, ThemeService.border.g, ThemeService.border.b, 0.10)
+
+                                Behavior on scale {
+                                    NumberAnimation { duration: 120; easing.type: Easing.OutCubic }
+                                }
+
+                                Image {
+                                    anchors.fill: parent
+                                    source: "file://" + modelData
+                                    fillMode: Image.PreserveAspectCrop
+                                    sourceSize.width: 260
+                                    sourceSize.height: 160
+                                    asynchronous: true
+                                    cache: true
+                                }
+
+                                Rectangle {
+                                    anchors.fill: parent
+                                    color: itemMouse.containsMouse || index === root.selectedIndex
+                                        ? Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.12)
+                                        : "transparent"
+
+                                    Behavior on color {
+                                        ColorAnimation { duration: 120 }
+                                    }
+                                }
+
+                                Rectangle {
+                                    anchors.left: parent.left
+                                    anchors.right: parent.right
+                                    anchors.bottom: parent.bottom
+                                    height: 28
+                                    color: Qt.rgba(ThemeService.background.r, ThemeService.background.g, ThemeService.background.b, 0.66)
+                                    visible: itemMouse.containsMouse || index === root.selectedIndex || modelData === WallpaperService.currentWallpaper
+
+                                    Text {
+                                        anchors.left: parent.left
+                                        anchors.right: currentMark.left
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        anchors.leftMargin: 9
+                                        anchors.rightMargin: 6
+                                        text: root.fileName(modelData)
+                                        color: ThemeService.textBright
+                                        font.family: ThemeService.fontName
+                                        font.pixelSize: 10
+                                        font.weight: Font.DemiBold
+                                        elide: Text.ElideRight
+                                    }
+
+                                    Text {
+                                        id: currentMark
+                                        anchors.right: parent.right
+                                        anchors.rightMargin: 8
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        width: modelData === WallpaperService.currentWallpaper ? 18 : 0
+                                        text: "󰄬"
+                                        color: ThemeService.primary
+                                        font.family: ThemeService.iconFont
+                                        font.pixelSize: 13
+                                        visible: modelData === WallpaperService.currentWallpaper
+                                    }
+                                }
+
+                                Rectangle {
+                                    anchors.left: parent.left
+                                    anchors.top: parent.top
+                                    anchors.margins: 8
+                                    width: 24
+                                    height: 22
+                                    radius: 8
+                                    visible: index === root.selectedIndex
+                                    color: Qt.rgba(ThemeService.background.r, ThemeService.background.g, ThemeService.background.b, 0.72)
+                                    border.width: 1
+                                    border.color: ThemeService.primary
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: index + 1
+                                        color: ThemeService.primary
+                                        font.family: ThemeService.fontName
+                                        font.pixelSize: 10
+                                        font.weight: Font.Bold
+                                    }
+                                }
+
+                                MouseArea {
+                                    id: itemMouse
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onEntered: root.selectedIndex = index
+                                    onClicked: {
+                                        WallpaperService.setWallpaperByPath(modelData);
+                                        shellRoot.wallpaperPickerActive = false;
+                                    }
+                                }
+                            }
+                        }
+
+                        onCurrentIndexChanged: positionViewAtIndex(currentIndex, GridView.Contain)
+                    }
+
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: 18
+                        color: "transparent"
+                        border.width: 1
+                        border.color: Qt.rgba(ThemeService.border.r, ThemeService.border.g, ThemeService.border.b, 0.08)
+                        visible: wallpaperGrid.count === 0
+
+                        Column {
+                            anchors.centerIn: parent
+                            spacing: 10
+
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: "󰋩"
+                                color: ThemeService.textDim
+                                font.family: ThemeService.iconFont
+                                font.pixelSize: 34
+                            }
+
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: root.hasWallpapers ? "No results" : "No wallpapers found"
+                                color: ThemeService.textDim
+                                font.family: ThemeService.fontName
+                                font.pixelSize: 13
+                            }
+
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                width: 360
+                                text: WallpaperService.wallpaperDir
+                                color: ThemeService.textDim
+                                font.family: ThemeService.fontName
+                                font.pixelSize: 10
+                                horizontalAlignment: Text.AlignHCenter
+                                elide: Text.ElideMiddle
+                            }
+                        }
+                    }
+                }
             }
 
             Row {
                 width: parent.width
-                height: 18
-                spacing: 14
+                height: 16
+                spacing: 16
 
                 Text {
-                    text: "←↑↓→ navigate"
+                    text: "Arrow keys navigate"
                     color: ThemeService.textDim
                     font.family: ThemeService.fontName
                     font.pixelSize: 10
@@ -380,38 +570,20 @@ PanelWindow {
                 }
 
                 Text {
-                    text: "Directory: " + WallpaperService.wallpaperDir
+                    text: "Esc close"
                     color: ThemeService.textDim
                     font.family: ThemeService.fontName
                     font.pixelSize: 10
-                    width: parent.width - 210
-                    elide: Text.ElideRight
-                }
-            }
-        }
-
-        Item {
-            anchors.fill: parent
-            visible: !WallpaperService.wallpaperPaths.length
-
-            Column {
-                anchors.centerIn: parent
-                spacing: 10
-
-                Text {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    text: "󰋩"
-                    color: ThemeService.textDim
-                    font.family: ThemeService.iconFont
-                    font.pixelSize: 38
                 }
 
                 Text {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    text: "No wallpapers found"
+                    width: parent.width - 260
+                    text: WallpaperService.wallpaperDir
                     color: ThemeService.textDim
                     font.family: ThemeService.fontName
-                    font.pixelSize: 13
+                    font.pixelSize: 10
+                    horizontalAlignment: Text.AlignRight
+                    elide: Text.ElideMiddle
                 }
             }
         }
