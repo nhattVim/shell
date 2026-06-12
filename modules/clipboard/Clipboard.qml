@@ -40,15 +40,20 @@ PanelWindow {
         }
     }
 
-    MouseArea {
+    Rectangle {
         anchors.fill: parent
-        onClicked: shellRoot.clipboardActive = false
+        color: ThemeService.scrimColor
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: shellRoot.clipboardActive = false
+        }
     }
 
     StyledRect {
         id: clipboardCard
-        width: 520
-        height: 430
+        width: 560
+        height: 470
         anchors.centerIn: parent
         clip: true
         rectColor: ThemeService.background
@@ -62,123 +67,196 @@ PanelWindow {
 
         Column {
             anchors.fill: parent
-            anchors.margins: ThemeService.spacingLarge
-            spacing: ThemeService.spacingMedium
+            anchors.margins: 18
+            spacing: 14
 
             Row {
                 width: parent.width
-                height: 40
-                spacing: 8
+                height: 34
+                spacing: 10
 
                 Rectangle {
-                    width: parent.width
-                    height: parent.height
-                    radius: ThemeService.radiusSmall
-                    color: ThemeService.surfaceBright
-                    border.color: ThemeService.primary
-                    border.width: 1
+                    width: 34
+                    height: 34
+                    radius: 13
+                    color: Qt.rgba(
+                        ThemeService.primary.r,
+                        ThemeService.primary.g,
+                        ThemeService.primary.b,
+                        0.16
+                    )
 
-                    Row {
-                        anchors.fill: parent
-                        anchors.leftMargin: ThemeService.radiusMedium
-                        anchors.rightMargin: ThemeService.radiusMedium
-                        spacing: 10
+                    Text {
+                        anchors.centerIn: parent
+                        text: "󰅇"
+                        color: ThemeService.primary
+                        font.family: ThemeService.iconFont
+                        font.pixelSize: 17
+                    }
+                }
+
+                Column {
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: parent.width - 144
+                    spacing: 1
+
+                    Text {
+                        text: "Clipboard"
+                        color: ThemeService.textBright
+                        font.family: ThemeService.fontName
+                        font.pixelSize: 15
+                        font.weight: Font.DemiBold
+                    }
+
+                    Text {
+                        text: root.results.length + " saved item" + (root.results.length === 1 ? "" : "s")
+                        color: ThemeService.textDim
+                        font.family: ThemeService.fontName
+                        font.pixelSize: 11
+                    }
+                }
+
+                Rectangle {
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 86
+                    height: 28
+                    radius: 10
+                    color: Qt.rgba(
+                        ThemeService.surfaceBright.r,
+                        ThemeService.surfaceBright.g,
+                        ThemeService.surfaceBright.b,
+                        0.65
+                    )
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: "Esc close"
+                        color: ThemeService.textDim
+                        font.family: ThemeService.fontName
+                        font.pixelSize: 11
+                    }
+                }
+            }
+
+            Rectangle {
+                id: searchBox
+                width: parent.width
+                height: 46
+                radius: 16
+                color: ThemeService.surface
+                border.width: 1
+                border.color: searchInput.activeFocus
+                    ? Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.75)
+                    : Qt.rgba(ThemeService.border.r, ThemeService.border.g, ThemeService.border.b, 0.16)
+
+                Row {
+                    anchors.fill: parent
+                    anchors.leftMargin: 15
+                    anchors.rightMargin: 15
+                    spacing: 11
+
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: "󰍉"
+                        color: searchInput.activeFocus ? ThemeService.primary : ThemeService.textDim
+                        font.family: ThemeService.iconFont
+                        font.pixelSize: 17
+                    }
+
+                    TextInput {
+                        id: searchInput
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: parent.width - 28
+                        color: ThemeService.foreground
+                        selectionColor: Qt.rgba(
+                            ThemeService.primary.r,
+                            ThemeService.primary.g,
+                            ThemeService.primary.b,
+                            0.35
+                        )
+                        selectedTextColor: ThemeService.textBright
+                        font.family: ThemeService.fontName
+                        font.pixelSize: 13
+                        selectByMouse: true
+                        clip: true
 
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
-                            text: "󰅇"
-                            color: ThemeService.primary
-                            font.family: ThemeService.iconFont
-                            font.pixelSize: 16
-                        }
-
-                        TextInput {
-                            id: searchInput
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: parent.width - 28
-                            color: ThemeService.foreground
+                            text: "Search clipboard history..."
+                            color: ThemeService.textDim
                             font.family: ThemeService.fontName
                             font.pixelSize: 13
-                            selectByMouse: true
+                            visible: parent.text.length === 0
+                            width: parent.width
+                            elide: Text.ElideRight
+                        }
 
-                            Text {
-                                anchors.verticalCenter: parent.verticalCenter
-                                text: "Search clipboard...  Enter copy  Delete remove  Shift+Delete clear all"
-                                color: ThemeService.textDim
-                                font.family: ThemeService.fontName
-                                font.pixelSize: 12
-                                visible: parent.text.length === 0
-                                width: parent.width
-                                elide: Text.ElideRight
-                            }
+                        onTextChanged: {
+                            root.searchText = text;
+                            root.selectedIndex = 0;
+                        }
 
-                            onTextChanged: {
-                                root.searchText = text;
-                                root.selectedIndex = 0;
-                            }
-
-                            Keys.onPressed: event => {
-                                const count = clipboardList.count;
-                                if (event.key === Qt.Key_Down || (event.key === Qt.Key_Tab && !(event.modifiers & Qt.ShiftModifier))) {
-                                    if (count > 0) root.selectedIndex = (root.selectedIndex + 1) % count;
-                                    event.accepted = true;
-                                } else if (event.key === Qt.Key_Up || (event.key === Qt.Key_Backtab) || (event.key === Qt.Key_Tab && (event.modifiers & Qt.ShiftModifier))) {
-                                    if (count > 0) root.selectedIndex = (root.selectedIndex - 1 + count) % count;
-                                    event.accepted = true;
-                                } else if (event.key === Qt.Key_Enter || event.key === Qt.Key_Return) {
-                                    root.copySelected();
-                                    event.accepted = true;
-                                } else if (event.key === Qt.Key_Delete) {
-                                    if (event.modifiers & Qt.ShiftModifier) {
-                                        ClipboardService.clearAll();
-                                    } else {
-                                        root.deleteSelected();
-                                    }
-                                    event.accepted = true;
-                                } else if (event.key === Qt.Key_Escape) {
-                                    shellRoot.clipboardActive = false;
-                                    event.accepted = true;
+                        Keys.onPressed: event => {
+                            const count = clipboardList.count;
+                            if (event.key === Qt.Key_Down || (event.key === Qt.Key_Tab && !(event.modifiers & Qt.ShiftModifier))) {
+                                if (count > 0) root.selectedIndex = (root.selectedIndex + 1) % count;
+                                event.accepted = true;
+                            } else if (event.key === Qt.Key_Up || (event.key === Qt.Key_Backtab) || (event.key === Qt.Key_Tab && (event.modifiers & Qt.ShiftModifier))) {
+                                if (count > 0) root.selectedIndex = (root.selectedIndex - 1 + count) % count;
+                                event.accepted = true;
+                            } else if (event.key === Qt.Key_Enter || event.key === Qt.Key_Return) {
+                                root.copySelected();
+                                event.accepted = true;
+                            } else if (event.key === Qt.Key_Delete) {
+                                if (event.modifiers & Qt.ShiftModifier) {
+                                    ClipboardService.clearAll();
+                                } else {
+                                    root.deleteSelected();
                                 }
+                                event.accepted = true;
+                            } else if (event.key === Qt.Key_Escape) {
+                                shellRoot.clipboardActive = false;
+                                event.accepted = true;
                             }
                         }
                     }
                 }
-
-            }
-
-            Rectangle {
-                width: parent.width
-                height: 1
-                color: Qt.rgba(ThemeService.border.r, ThemeService.border.g, ThemeService.border.b, 0.12)
             }
 
             ListView {
                 id: clipboardList
                 width: parent.width
-                height: parent.height - 52
+                height: parent.height - 144
                 clip: true
-                spacing: 7
+                spacing: 8
                 model: root.results
                 currentIndex: root.selectedIndex
+                boundsBehavior: Flickable.StopAtBounds
 
                 delegate: Rectangle {
                     required property int index
                     required property var modelData
 
                     width: clipboardList.width
-                    height: 54
-                    radius: ThemeService.radiusSmall
+                    height: 58
+                    radius: 16
                     color: index === root.selectedIndex
-                        ? Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.16)
-                        : (itemMouse.containsMouse ? Qt.rgba(ThemeService.surfaceBright.r, ThemeService.surfaceBright.g, ThemeService.surfaceBright.b, 0.42) : ThemeService.surface)
+                        ? Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.15)
+                        : itemMouse.containsMouse
+                            ? Qt.rgba(ThemeService.surfaceBright.r, ThemeService.surfaceBright.g, ThemeService.surfaceBright.b, 0.52)
+                            : ThemeService.surface
+
                     border.width: 1
-                    border.color: index === root.selectedIndex ? ThemeService.primary : ThemeService.surfaceBright
+                    border.color: index === root.selectedIndex
+                        ? Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.7)
+                        : Qt.rgba(ThemeService.border.r, ThemeService.border.g, ThemeService.border.b, 0.1)
 
                     MouseArea {
                         id: itemMouse
                         anchors.fill: parent
                         hoverEnabled: true
                         acceptedButtons: Qt.LeftButton
+                        cursorShape: Qt.PointingHandCursor
                         onEntered: root.selectedIndex = index
                         onClicked: {
                             ClipboardService.copyEntry(modelData.line);
@@ -189,44 +267,125 @@ PanelWindow {
                     Row {
                         anchors.fill: parent
                         anchors.leftMargin: 12
-                        anchors.rightMargin: 8
-                        spacing: 10
+                        anchors.rightMargin: 13
+                        spacing: 11
 
-                        Text {
+                        Rectangle {
                             anchors.verticalCenter: parent.verticalCenter
                             width: 34
-                            text: "#" + (index + 1)
-                            color: ThemeService.textDim
-                            font.family: ThemeService.fontName
-                            font.pixelSize: 10
-                            horizontalAlignment: Text.AlignRight
-                            elide: Text.ElideRight
+                            height: 34
+                            radius: 12
+                            color: index === root.selectedIndex
+                                ? Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.2)
+                                : Qt.rgba(ThemeService.surfaceBright.r, ThemeService.surfaceBright.g, ThemeService.surfaceBright.b, 0.55)
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: index + 1
+                                color: index === root.selectedIndex ? ThemeService.primary : ThemeService.textDim
+                                font.family: ThemeService.fontName
+                                font.pixelSize: 11
+                                font.weight: Font.DemiBold
+                            }
+                        }
+
+                        Column {
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: parent.width - 94
+                            spacing: 3
+
+                            Text {
+                                width: parent.width
+                                text: modelData.preview
+                                color: index === root.selectedIndex ? ThemeService.textBright : ThemeService.foreground
+                                font.family: ThemeService.fontName
+                                font.pixelSize: 13
+                                elide: Text.ElideRight
+                            }
+
+                            Text {
+                                width: parent.width
+                                text: "Enter to copy · Delete to remove"
+                                color: ThemeService.textDim
+                                font.family: ThemeService.fontName
+                                font.pixelSize: 10
+                                elide: Text.ElideRight
+                                visible: index === root.selectedIndex
+                            }
                         }
 
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
-                            width: parent.width - 46
-                            text: modelData.preview
-                            color: index === root.selectedIndex ? ThemeService.textBright : ThemeService.foreground
-                            font.family: ThemeService.fontName
-                            font.pixelSize: 13
-                            elide: Text.ElideRight
+                            text: "󰆏"
+                            color: index === root.selectedIndex ? ThemeService.primary : ThemeService.textDim
+                            font.family: ThemeService.iconFont
+                            font.pixelSize: 15
+                            opacity: index === root.selectedIndex || itemMouse.containsMouse ? 1 : 0
                         }
-
                     }
                 }
 
                 onCurrentIndexChanged: positionViewAtIndex(currentIndex, ListView.Contain)
             }
 
-            Text {
-                anchors.horizontalCenter: parent.horizontalCenter
-                y: 190
-                visible: !ClipboardService.loading && root.results.length === 0
-                text: ClipboardService.error !== "" ? ClipboardService.error : "Clipboard history is empty"
-                color: ThemeService.textDim
-                font.family: ThemeService.fontName
-                font.pixelSize: 12
+            Row {
+                width: parent.width
+                height: 22
+                spacing: 8
+
+                Text {
+                    text: "↑↓ navigate"
+                    color: ThemeService.textDim
+                    font.family: ThemeService.fontName
+                    font.pixelSize: 11
+                }
+
+                Text {
+                    text: "Enter copy"
+                    color: ThemeService.textDim
+                    font.family: ThemeService.fontName
+                    font.pixelSize: 11
+                }
+
+                Text {
+                    text: "Delete remove"
+                    color: ThemeService.textDim
+                    font.family: ThemeService.fontName
+                    font.pixelSize: 11
+                }
+
+                Text {
+                    text: "Shift+Delete clear all"
+                    color: ThemeService.textDim
+                    font.family: ThemeService.fontName
+                    font.pixelSize: 11
+                }
+            }
+        }
+
+        Item {
+            anchors.fill: parent
+            visible: !ClipboardService.loading && root.results.length === 0
+
+            Column {
+                anchors.centerIn: parent
+                spacing: 10
+
+                Text {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: ClipboardService.error !== "" ? "󰅚" : "󰅇"
+                    color: ClipboardService.error !== "" ? ThemeService.danger : ThemeService.textDim
+                    font.family: ThemeService.iconFont
+                    font.pixelSize: 34
+                }
+
+                Text {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: ClipboardService.error !== "" ? ClipboardService.error : "Clipboard history is empty"
+                    color: ThemeService.textDim
+                    font.family: ThemeService.fontName
+                    font.pixelSize: 13
+                }
             }
         }
     }
@@ -241,6 +400,7 @@ PanelWindow {
     function deleteSelected() {
         if (selectedIndex >= 0 && selectedIndex < results.length) {
             ClipboardService.deleteEntry(results[selectedIndex].line);
+            selectedIndex = Math.max(0, Math.min(selectedIndex, results.length - 2));
         }
     }
 }
