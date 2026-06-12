@@ -20,7 +20,7 @@ PanelWindow {
     exclusionMode: ExclusionMode.Ignore
 
     WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.namespace: "nhattVim:notificationPopup"
+    WlrLayershell.namespace: "ei:notificationPopup"
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
 
     anchors {

@@ -19,7 +19,7 @@ PanelWindow {
     }
 
     WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.namespace: "nhattVim:osd"
+    WlrLayershell.namespace: "ei:osd"
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
     WlrLayershell.margins.bottom: 100
     exclusionMode: ExclusionMode.Ignore

@@ -22,7 +22,7 @@ PanelWindow {
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: visible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
-    WlrLayershell.namespace: "nhattvim-screenshot"
+    WlrLayershell.namespace: "ei-screenshot"
 
     onVisibleChanged: selector.reset()
 

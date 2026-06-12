@@ -32,7 +32,7 @@ Singleton {
     readonly property string condition: conditionForCode(weatherCode)
     readonly property string icon: iconForCode(weatherCode)
     readonly property string todayLabel: Qt.formatDate(new Date(), "dddd, MMM d")
-    readonly property string cachePath: Quickshell.env("HOME") + "/.cache/nhattVim/weather.json"
+    readonly property string cachePath: Quickshell.env("HOME") + "/.cache/ei/weather.json"
 
     function refresh() {
         if (!hasLocatedThisSession) {

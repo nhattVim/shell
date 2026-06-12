@@ -49,12 +49,12 @@ Singleton {
     // Persistent storage for active wallpaper
     FileView {
         id: configFile
-        path: Quickshell.env("HOME") + "/.cache/nhattVim/wallpaper.json"
+        path: Quickshell.env("HOME") + "/.cache/ei/wallpaper.json"
     }
     
     Process {
         id: ensureCacheDir
-        command: ["mkdir", "-p", Quickshell.env("HOME") + "/.cache/nhattVim"]
+        command: ["mkdir", "-p", Quickshell.env("HOME") + "/.cache/ei"]
         onExited: {
             scanWallpapers.running = true;
         }

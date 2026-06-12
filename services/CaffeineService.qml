@@ -14,7 +14,7 @@ Singleton {
 
     Process {
         id: inhibitProcess
-        command: ["systemd-inhibit", "--what=idle:sleep", "--who=nhattVim", "--why=Caffeine mode", "sleep", "infinity"]
+        command: ["systemd-inhibit", "--what=idle:sleep", "--who=ei", "--why=Caffeine mode", "sleep", "infinity"]
         running: false
     }
 }

@@ -14,7 +14,7 @@ PanelWindow {
     visible: true
     color: "transparent"
     exclusionMode: ExclusionMode.Ignore
-    WlrLayershell.namespace: "nhattVim:screenFrame"
+    WlrLayershell.namespace: "ei:screenFrame"
     WlrLayershell.layer: WlrLayer.Overlay
     
     mask: Region {

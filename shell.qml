@@ -1,4 +1,4 @@
-//@ pragma ShellId nhattVim
+//@ pragma ShellId ei
 import Quickshell
 import QtQuick
 import "modules/shell"

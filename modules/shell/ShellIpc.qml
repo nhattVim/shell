@@ -9,7 +9,7 @@ Item {
     required property var shellRoot
 
     IpcHandler {
-        target: "nhattVim"
+        target: "ei"
 
         function toggleLauncher(): void {
             LauncherService.buildIndex();

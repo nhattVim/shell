@@ -19,7 +19,7 @@ PanelWindow {
 
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
     WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.namespace: "nhattVim:wallpaper-picker"
+    WlrLayershell.namespace: "ei:wallpaper-picker"
     exclusionMode: ExclusionMode.Ignore
     exclusiveZone: 0
 

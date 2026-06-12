@@ -22,7 +22,7 @@ PanelWindow {
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-    WlrLayershell.namespace: "nhattvim-record-indicator"
+    WlrLayershell.namespace: "ei-record-indicator"
 
     mask: Region {
         item: indicator.visible ? recMenu : emptyMask

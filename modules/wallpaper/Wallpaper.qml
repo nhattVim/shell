@@ -15,7 +15,7 @@ PanelWindow {
     }
 
     WlrLayershell.layer: WlrLayer.Background
-    WlrLayershell.namespace: "nhattVim:wallpaper"
+    WlrLayershell.namespace: "ei:wallpaper"
     exclusionMode: ExclusionMode.Ignore
 
     mask: Region {

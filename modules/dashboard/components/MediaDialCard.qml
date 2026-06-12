@@ -140,7 +140,7 @@ PanelFrame {
 
         Text {
             anchors.centerIn: parent
-            text: "nhattVim"
+            text: "ei"
             font.family: ThemeService.fontName
             font.pixelSize: 14
             font.weight: Font.Black

@@ -13,7 +13,7 @@ Singleton {
     property int idOffset: 0
     property bool storeReady: false
     property int count: 0
-    readonly property string cacheDir: Quickshell.env("HOME") + "/.cache/nhattVim"
+    readonly property string cacheDir: Quickshell.env("HOME") + "/.cache/ei"
     readonly property string cachePath: cacheDir + "/notifications.json"
 
     FileView {

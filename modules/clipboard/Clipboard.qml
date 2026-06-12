@@ -19,7 +19,7 @@ PanelWindow {
 
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
     WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.namespace: "nhattVim:clipboard"
+    WlrLayershell.namespace: "ei:clipboard"
     exclusionMode: ExclusionMode.Ignore
     exclusiveZone: 0
 
