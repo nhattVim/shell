@@ -52,8 +52,8 @@ PanelWindow {
 
     StyledRect {
         id: clipboardCard
-        width: 560
-        height: 470
+        width: 520
+        height: 400
         anchors.centerIn: parent
         clip: true
         rectColor: ThemeService.background
@@ -67,82 +67,14 @@ PanelWindow {
 
         Column {
             anchors.fill: parent
-            anchors.margins: 18
-            spacing: 14
-
-            Row {
-                width: parent.width
-                height: 34
-                spacing: 10
-
-                Rectangle {
-                    width: 34
-                    height: 34
-                    radius: 13
-                    color: Qt.rgba(
-                        ThemeService.primary.r,
-                        ThemeService.primary.g,
-                        ThemeService.primary.b,
-                        0.16
-                    )
-
-                    Text {
-                        anchors.centerIn: parent
-                        text: "󰅇"
-                        color: ThemeService.primary
-                        font.family: ThemeService.iconFont
-                        font.pixelSize: 17
-                    }
-                }
-
-                Column {
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: parent.width - 144
-                    spacing: 1
-
-                    Text {
-                        text: "Clipboard"
-                        color: ThemeService.textBright
-                        font.family: ThemeService.fontName
-                        font.pixelSize: 15
-                        font.weight: Font.DemiBold
-                    }
-
-                    Text {
-                        text: root.results.length + " saved item" + (root.results.length === 1 ? "" : "s")
-                        color: ThemeService.textDim
-                        font.family: ThemeService.fontName
-                        font.pixelSize: 11
-                    }
-                }
-
-                Rectangle {
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: 86
-                    height: 28
-                    radius: 10
-                    color: Qt.rgba(
-                        ThemeService.surfaceBright.r,
-                        ThemeService.surfaceBright.g,
-                        ThemeService.surfaceBright.b,
-                        0.65
-                    )
-
-                    Text {
-                        anchors.centerIn: parent
-                        text: "Esc close"
-                        color: ThemeService.textDim
-                        font.family: ThemeService.fontName
-                        font.pixelSize: 11
-                    }
-                }
-            }
+            anchors.margins: 14
+            spacing: 10
 
             Rectangle {
                 id: searchBox
                 width: parent.width
-                height: 46
-                radius: 16
+                height: 40
+                radius: 14
                 color: ThemeService.surface
                 border.width: 1
                 border.color: searchInput.activeFocus
@@ -160,7 +92,7 @@ PanelWindow {
                         text: "󰍉"
                         color: searchInput.activeFocus ? ThemeService.primary : ThemeService.textDim
                         font.family: ThemeService.iconFont
-                        font.pixelSize: 17
+                        font.pixelSize: 16
                     }
 
                     TextInput {
@@ -182,7 +114,7 @@ PanelWindow {
 
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
-                            text: "Search clipboard history..."
+                            text: "Search clipboard history"
                             color: ThemeService.textDim
                             font.family: ThemeService.fontName
                             font.pixelSize: 13
@@ -226,9 +158,9 @@ PanelWindow {
             ListView {
                 id: clipboardList
                 width: parent.width
-                height: parent.height - 144
+                height: parent.height - 76
                 clip: true
-                spacing: 8
+                spacing: 6
                 model: root.results
                 currentIndex: root.selectedIndex
                 boundsBehavior: Flickable.StopAtBounds
@@ -238,8 +170,8 @@ PanelWindow {
                     required property var modelData
 
                     width: clipboardList.width
-                    height: 58
-                    radius: 16
+                    height: 46
+                    radius: 13
                     color: index === root.selectedIndex
                         ? Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.15)
                         : itemMouse.containsMouse
@@ -266,15 +198,15 @@ PanelWindow {
 
                     Row {
                         anchors.fill: parent
-                        anchors.leftMargin: 12
-                        anchors.rightMargin: 13
-                        spacing: 11
+                        anchors.leftMargin: 10
+                        anchors.rightMargin: 10
+                        spacing: 10
 
                         Rectangle {
                             anchors.verticalCenter: parent.verticalCenter
-                            width: 34
-                            height: 34
-                            radius: 12
+                            width: 28
+                            height: 28
+                            radius: 10
                             color: index === root.selectedIndex
                                 ? Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.2)
                                 : Qt.rgba(ThemeService.surfaceBright.r, ThemeService.surfaceBright.g, ThemeService.surfaceBright.b, 0.55)
@@ -289,29 +221,14 @@ PanelWindow {
                             }
                         }
 
-                        Column {
+                        Text {
                             anchors.verticalCenter: parent.verticalCenter
-                            width: parent.width - 94
-                            spacing: 3
-
-                            Text {
-                                width: parent.width
-                                text: modelData.preview
-                                color: index === root.selectedIndex ? ThemeService.textBright : ThemeService.foreground
-                                font.family: ThemeService.fontName
-                                font.pixelSize: 13
-                                elide: Text.ElideRight
-                            }
-
-                            Text {
-                                width: parent.width
-                                text: "Enter to copy · Delete to remove"
-                                color: ThemeService.textDim
-                                font.family: ThemeService.fontName
-                                font.pixelSize: 10
-                                elide: Text.ElideRight
-                                visible: index === root.selectedIndex
-                            }
+                            width: parent.width - 68
+                            text: modelData.preview
+                            color: index === root.selectedIndex ? ThemeService.textBright : ThemeService.foreground
+                            font.family: ThemeService.fontName
+                            font.pixelSize: 13
+                            elide: Text.ElideRight
                         }
 
                         Text {
@@ -330,35 +247,35 @@ PanelWindow {
 
             Row {
                 width: parent.width
-                height: 22
-                spacing: 8
+                height: 16
+                spacing: 10
 
                 Text {
-                    text: "↑↓ navigate"
+                    text: root.results.length + " item" + (root.results.length === 1 ? "" : "s")
                     color: ThemeService.textDim
                     font.family: ThemeService.fontName
-                    font.pixelSize: 11
+                    font.pixelSize: 10
                 }
 
                 Text {
                     text: "Enter copy"
                     color: ThemeService.textDim
                     font.family: ThemeService.fontName
-                    font.pixelSize: 11
+                    font.pixelSize: 10
                 }
 
                 Text {
                     text: "Delete remove"
                     color: ThemeService.textDim
                     font.family: ThemeService.fontName
-                    font.pixelSize: 11
+                    font.pixelSize: 10
                 }
 
                 Text {
                     text: "Shift+Delete clear all"
                     color: ThemeService.textDim
                     font.family: ThemeService.fontName
-                    font.pixelSize: 11
+                    font.pixelSize: 10
                 }
             }
         }
