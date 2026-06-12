@@ -33,7 +33,7 @@ Item {
         anchors.fill: parent
         anchors.margins: 14
 
-        Rectangle {
+        PanelFrame {
             id: summaryPanel
             anchors {
                 left: parent.left
@@ -42,97 +42,96 @@ Item {
             }
             width: 300
             radius: 24
-            color: Qt.rgba(ThemeService.surfaceBright.r, ThemeService.surfaceBright.g, ThemeService.surfaceBright.b, 0.34)
+            color: Qt.rgba(ThemeService.surface.r, ThemeService.surface.g, ThemeService.surface.b, 0.86)
+            border.width: 1
+            border.color: Qt.rgba(ThemeService.border.r, ThemeService.border.g, ThemeService.border.b, ThemeService.borderOpacity)
 
-            Text {
-                id: cityLabel
-                anchors {
-                    left: parent.left
-                    right: parent.right
-                    top: parent.top
-                    margins: 18
-                }
-                text: WeatherService.city
-                color: ThemeService.textBright
-                font.family: ThemeService.fontName
-                font.pixelSize: 25
-                font.weight: Font.Black
-                elide: Text.ElideRight
-            }
+            Flickable {
+                anchors.fill: parent
+                anchors.margins: 18
+                clip: true
+                contentWidth: width
+                contentHeight: summaryContent.implicitHeight
+                boundsBehavior: Flickable.StopAtBounds
 
-            Text {
-                id: dateLabel
-                anchors.left: cityLabel.left
-                anchors.top: cityLabel.bottom
-                anchors.topMargin: 2
-                text: WeatherService.todayLabel
-                color: ThemeService.foreground
-                opacity: 0.82
-                font.family: ThemeService.fontName
-                font.pixelSize: 11
-            }
+                Column {
+                    id: summaryContent
+                    width: parent.width
+                    spacing: 2
 
-            Text {
-                id: weatherIcon
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.top: dateLabel.bottom
-                anchors.topMargin: 18
-                text: WeatherService.icon
-                color: ThemeService.foreground
-                font.family: ThemeService.iconFont
-                font.pixelSize: 68
-            }
+                    Text {
+                        width: parent.width
+                        text: WeatherService.city
+                        color: ThemeService.textBright
+                        font.family: ThemeService.fontName
+                        font.pixelSize: 25
+                        font.weight: Font.Black
+                        elide: Text.ElideRight
+                    }
 
-            Text {
-                id: tempLabel
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.top: weatherIcon.bottom
-                anchors.topMargin: -2
-                text: WeatherService.ready ? Math.round(WeatherService.temperature) + "°C" : "--°C"
-                color: ThemeService.textBright
-                font.family: ThemeService.fontName
-                font.pixelSize: 54
-                font.weight: Font.Black
-            }
+                    Text {
+                        width: parent.width
+                        text: WeatherService.todayLabel
+                        color: ThemeService.foreground
+                        opacity: 0.82
+                        font.family: ThemeService.fontName
+                        font.pixelSize: 11
+                    }
 
-            Text {
-                id: conditionLabel
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.top: tempLabel.bottom
-                anchors.topMargin: 4
-                width: parent.width - 40
-                text: WeatherService.loading && !WeatherService.ready ? "Loading" : WeatherService.condition
-                color: ThemeService.foreground
-                opacity: 0.86
-                font.family: ThemeService.fontName
-                font.pixelSize: 12
-                horizontalAlignment: Text.AlignHCenter
-                elide: Text.ElideRight
-            }
+                    Text {
+                        width: parent.width
+                        topPadding: 18
+                        text: WeatherService.icon
+                        color: ThemeService.foreground
+                        font.family: ThemeService.iconFont
+                        font.pixelSize: 68
+                        horizontalAlignment: Text.AlignHCenter
+                    }
 
-            Row {
-                anchors {
-                    horizontalCenter: parent.horizontalCenter
-                    top: conditionLabel.bottom
-                    topMargin: 14
-                }
-                spacing: 22
+                    Text {
+                        width: parent.width
+                        text: WeatherService.ready ? Math.round(WeatherService.temperature) + "°C" : "--°C"
+                        color: ThemeService.textBright
+                        font.family: ThemeService.fontName
+                        font.pixelSize: 54
+                        font.weight: Font.Black
+                        horizontalAlignment: Text.AlignHCenter
+                    }
 
-                SunTime {
-                    icon: "󰖜"
-                    label: "Sunrise"
-                    value: WeatherService.sunrise
-                }
+                    Text {
+                        width: parent.width
+                        topPadding: 4
+                        text: WeatherService.loading && !WeatherService.ready ? "Loading" : WeatherService.condition
+                        color: ThemeService.foreground
+                        opacity: 0.86
+                        font.family: ThemeService.fontName
+                        font.pixelSize: 12
+                        horizontalAlignment: Text.AlignHCenter
+                        elide: Text.ElideRight
+                    }
 
-                SunTime {
-                    icon: "󰖛"
-                    label: "Sunset"
-                    value: WeatherService.sunset
+                    Row {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        topPadding: 14
+                        spacing: 22
+
+                        SunTime {
+                            icon: "󰖜"
+                            label: "Sunrise"
+                            value: WeatherService.sunrise
+                        }
+
+                        SunTime {
+                            icon: "󰖛"
+                            label: "Sunset"
+                            value: WeatherService.sunset
+                        }
+                    }
                 }
             }
         }
 
-        Item {
+        PanelFrame {
             id: detailPanel
             anchors {
                 left: summaryPanel.right
@@ -141,120 +140,128 @@ Item {
                 top: parent.top
                 bottom: parent.bottom
             }
+            radius: 24
+            color: Qt.rgba(ThemeService.surface.r, ThemeService.surface.g, ThemeService.surface.b, 0.86)
+            border.width: 1
+            border.color: Qt.rgba(ThemeService.border.r, ThemeService.border.g, ThemeService.border.b, ThemeService.borderOpacity)
 
-            Row {
-                id: metricsRow
-                anchors {
-                    left: parent.left
-                    right: parent.right
-                    top: parent.top
-                }
-                height: 74
-                spacing: 8
+            Flickable {
+                id: detailScroll
+                anchors.fill: parent
+                anchors.margins: 12
+                clip: true
+                contentWidth: width
+                contentHeight: detailContent.implicitHeight
+                boundsBehavior: Flickable.StopAtBounds
 
-                WeatherMetricCard {
-                    width: (metricsRow.width - metricsRow.spacing * 2) / 3
-                    height: parent.height
-                    icon: "󰖎"
-                    label: "Humidity"
-                    value: WeatherService.humidity + "%"
-                }
+                Column {
+                    id: detailContent
+                    width: detailScroll.width
+                    spacing: 14
 
-                WeatherMetricCard {
-                    width: (metricsRow.width - metricsRow.spacing * 2) / 3
-                    height: parent.height
-                    icon: "󰔏"
-                    label: "Feels Like"
-                    value: Math.round(WeatherService.feelsLike) + "°C"
-                }
+                    Row {
+                        id: metricsRow
+                        width: parent.width
+                        height: 74
+                        spacing: 8
 
-                WeatherMetricCard {
-                    width: (metricsRow.width - metricsRow.spacing * 2) / 3
-                    height: parent.height
-                    icon: "󰖝"
-                    label: "Wind"
-                    value: WeatherService.windSpeed + " km/h"
-                }
-            }
+                        WeatherMetricCard {
+                            width: (metricsRow.width - metricsRow.spacing * 2) / 3
+                            height: parent.height
+                            icon: "󰖎"
+                            label: "Humidity"
+                            value: WeatherService.humidity + "%"
+                        }
 
-            Text {
-                id: forecastTitle
-                anchors.left: parent.left
-                anchors.top: metricsRow.bottom
-                anchors.topMargin: 14
-                text: "7-Day Forecast"
-                color: ThemeService.textBright
-                font.family: ThemeService.fontName
-                font.pixelSize: 13
-                font.weight: Font.Bold
-            }
+                        WeatherMetricCard {
+                            width: (metricsRow.width - metricsRow.spacing * 2) / 3
+                            height: parent.height
+                            icon: "󰔏"
+                            label: "Feels Like"
+                            value: Math.round(WeatherService.feelsLike) + "°C"
+                        }
 
-            Flow {
-                id: forecastFlow
-                anchors {
-                    left: parent.left
-                    right: parent.right
-                    top: forecastTitle.bottom
-                    topMargin: 9
-                    bottom: parent.bottom
-                }
-                spacing: 8
+                        WeatherMetricCard {
+                            width: (metricsRow.width - metricsRow.spacing * 2) / 3
+                            height: parent.height
+                            icon: "󰖝"
+                            label: "Wind"
+                            value: WeatherService.windSpeed + " km/h"
+                        }
+                    }
 
-                Repeater {
-                    model: WeatherService.forecast
+                    Text {
+                        width: parent.width
+                        text: "7-Day Forecast"
+                        color: ThemeService.textBright
+                        font.family: ThemeService.fontName
+                        font.pixelSize: 13
+                        font.weight: Font.Bold
+                    }
 
-                    Rectangle {
-                        width: (forecastFlow.width - forecastFlow.spacing * 3) / 4
-                        height: (forecastFlow.height - forecastFlow.spacing) / 2
-                        radius: 18
-                        color: Qt.rgba(ThemeService.surfaceBright.r, ThemeService.surfaceBright.g, ThemeService.surfaceBright.b, index === 0 ? 0.54 : 0.34)
+                    Flow {
+                        id: forecastFlow
+                        width: parent.width
+                        height: Math.ceil(WeatherService.forecast.length / 4) * 86 + Math.max(0, Math.ceil(WeatherService.forecast.length / 4) - 1) * spacing
+                        spacing: 8
 
-                        Row {
-                            anchors.fill: parent
-                            anchors.margins: 10
-                            spacing: 8
+                        Repeater {
+                            model: WeatherService.forecast
 
-                            Text {
-                                anchors.verticalCenter: parent.verticalCenter
-                                width: 32
-                                text: modelData.icon
-                                color: ThemeService.foreground
-                                font.family: ThemeService.iconFont
-                                font.pixelSize: 26
-                                horizontalAlignment: Text.AlignHCenter
-                            }
+                            Rectangle {
+                                width: (forecastFlow.width - forecastFlow.spacing * 3) / 4
+                                height: 86
+                                radius: 18
+                                color: Qt.rgba(ThemeService.surfaceBright.r, ThemeService.surfaceBright.g, ThemeService.surfaceBright.b, index === 0 ? 0.54 : 0.34)
 
-                            Column {
-                                anchors.verticalCenter: parent.verticalCenter
-                                width: parent.width - 40
-                                spacing: 2
+                                Row {
+                                    anchors.fill: parent
+                                    anchors.margins: 10
+                                    spacing: 8
 
-                                Text {
-                                    width: parent.width
-                                    text: modelData.day
-                                    color: index === 0 ? ThemeService.primary : ThemeService.textBright
-                                    font.family: ThemeService.fontName
-                                    font.pixelSize: 12
-                                    font.weight: Font.Bold
-                                    elide: Text.ElideRight
-                                }
+                                    Text {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        width: 32
+                                        text: modelData.icon
+                                        color: ThemeService.foreground
+                                        font.family: ThemeService.iconFont
+                                        font.pixelSize: 26
+                                        horizontalAlignment: Text.AlignHCenter
+                                    }
 
-                                Text {
-                                    width: parent.width
-                                    text: modelData.date
-                                    color: ThemeService.foreground
-                                    opacity: 0.72
-                                    font.family: ThemeService.fontName
-                                    font.pixelSize: 10
-                                }
+                                    Column {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        width: parent.width - 40
+                                        spacing: 2
 
-                                Text {
-                                    width: parent.width
-                                    text: modelData.high + "° / " + modelData.low + "°"
-                                    color: ThemeService.textBright
-                                    font.family: ThemeService.fontName
-                                    font.pixelSize: 11
-                                    font.weight: Font.Bold
+                                        Text {
+                                            width: parent.width
+                                            text: modelData.day
+                                            color: index === 0 ? ThemeService.primary : ThemeService.textBright
+                                            font.family: ThemeService.fontName
+                                            font.pixelSize: 12
+                                            font.weight: Font.Bold
+                                            elide: Text.ElideRight
+                                        }
+
+                                        Text {
+                                            width: parent.width
+                                            text: modelData.date
+                                            color: ThemeService.foreground
+                                            opacity: 0.72
+                                            font.family: ThemeService.fontName
+                                            font.pixelSize: 10
+                                        }
+
+                                        Text {
+                                            width: parent.width
+                                            text: modelData.high + "° / " + modelData.low + "°"
+                                            color: ThemeService.textBright
+                                            font.family: ThemeService.fontName
+                                            font.pixelSize: 11
+                                            font.weight: Font.Bold
+                                        }
+                                    }
                                 }
                             }
                         }
