@@ -11,25 +11,17 @@ Item {
     IpcHandler {
         target: "ei"
 
-        function toggleLauncher(): void {
+        function launcher(): void {
             LauncherService.buildIndex();
             root.shellRoot.launcherActive = !root.shellRoot.launcherActive;
         }
 
-        function toggleClipboard(): void {
+        function clipboard(): void {
             ClipboardService.refresh();
             root.shellRoot.clipboardActive = !root.shellRoot.clipboardActive;
         }
 
-        function clipboardDelete(id: string): void {
-            ClipboardService.deleteById(id);
-        }
-
-        function clipboardClear(): void {
-            ClipboardService.clearAll();
-        }
-
-        function toggleWallpaperPicker(): void {
+        function wallpaper(): void {
             WallpaperService.refresh();
             root.shellRoot.wallpaperPickerActive = !root.shellRoot.wallpaperPickerActive;
         }
@@ -58,7 +50,7 @@ Item {
             AudioService.changeVolume(-0.05);
         }
 
-        function toggleMute(): void {
+        function micMute(): void {
             AudioService.toggleMute();
         }
 

@@ -60,6 +60,10 @@ StyledRect {
         property int popupPadding: 10
         property real popupOpacity: 0
         property real popupScale: 0.94
+        property bool passwordMode: false
+        property var passwordNetwork: null
+        property string passwordText: ""
+        property string passwordError: ""
 
         anchor.item: root
         anchor.rect.x: root.width - implicitWidth
@@ -164,8 +168,162 @@ StyledRect {
                         elide: Text.ElideRight
                     }
 
+                    Text {
+                        visible: NetworkService.connecting
+                        width: parent.width
+                        text: "Connecting to " + NetworkService.connectingSsid + "..."
+                        color: ThemeService.textDim
+                        font.family: ThemeService.fontName
+                        font.pixelSize: 11
+                        elide: Text.ElideRight
+                    }
+
+                    Text {
+                        visible: NetworkService.connectionError.length > 0 && !wifiPopup.passwordMode
+                        width: parent.width
+                        text: NetworkService.connectionError
+                        color: ThemeService.danger
+                        font.family: ThemeService.fontName
+                        font.pixelSize: 11
+                        wrapMode: Text.WordWrap
+                    }
+
+                    Column {
+                        visible: wifiPopup.passwordMode
+                        width: parent.width
+                        spacing: 8
+
+                        Text {
+                            width: parent.width
+                            text: "Password for " + (wifiPopup.passwordNetwork ? wifiPopup.passwordNetwork.ssid : "")
+                            color: ThemeService.textBright
+                            font.family: ThemeService.fontName
+                            font.pixelSize: 12
+                            font.weight: Font.DemiBold
+                            elide: Text.ElideRight
+                        }
+
+                        Rectangle {
+                            width: parent.width
+                            height: 36
+                            radius: ThemeService.radiusSmall
+                            color: ThemeService.surface
+                            border.width: 1
+                            border.color: passwordInput.activeFocus
+                                ? Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.75)
+                                : Qt.rgba(ThemeService.border.r, ThemeService.border.g, ThemeService.border.b, 0.16)
+
+                            TextInput {
+                                id: passwordInput
+                                anchors.fill: parent
+                                anchors.leftMargin: 10
+                                anchors.rightMargin: 10
+                                verticalAlignment: TextInput.AlignVCenter
+                                color: ThemeService.foreground
+                                selectionColor: Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.35)
+                                selectedTextColor: ThemeService.textBright
+                                font.family: ThemeService.fontName
+                                font.pixelSize: 12
+                                echoMode: TextInput.Password
+                                clip: true
+                                text: wifiPopup.passwordText
+                                onTextChanged: {
+                                    wifiPopup.passwordText = text;
+                                    if (text.length > 0) wifiPopup.passwordError = "";
+                                }
+                                Keys.onPressed: event => {
+                                    if (event.key === Qt.Key_Enter || event.key === Qt.Key_Return) {
+                                        wifiPopup.submitPassword();
+                                        event.accepted = true;
+                                    } else if (event.key === Qt.Key_Escape) {
+                                        wifiPopup.cancelPassword();
+                                        event.accepted = true;
+                                    }
+                                }
+
+                                Text {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: "Enter password"
+                                    color: ThemeService.textDim
+                                    font.family: ThemeService.fontName
+                                    font.pixelSize: 12
+                                    visible: parent.text.length === 0
+                                }
+                            }
+                        }
+
+                        Text {
+                            visible: wifiPopup.passwordError.length > 0
+                            width: parent.width
+                            text: wifiPopup.passwordError
+                            color: ThemeService.danger
+                            font.family: ThemeService.fontName
+                            font.pixelSize: 11
+                            wrapMode: Text.WordWrap
+                        }
+
+                        Row {
+                            width: parent.width
+                            height: 30
+                            spacing: 8
+
+                            StyledRect {
+                                width: (parent.width - parent.spacing) / 2
+                                height: parent.height
+                                radius: ThemeService.radiusSmall
+                                rectColor: ThemeService.surfaceBright
+                                rectOpacity: cancelMouse.containsMouse ? 0.55 : 0.32
+                                borderOpacityValue: 0.0
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "Cancel"
+                                    color: ThemeService.foreground
+                                    font.family: ThemeService.fontName
+                                    font.pixelSize: 12
+                                    font.weight: Font.Medium
+                                }
+
+                                MouseArea {
+                                    id: cancelMouse
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: wifiPopup.cancelPassword()
+                                }
+                            }
+
+                            StyledRect {
+                                width: (parent.width - parent.spacing) / 2
+                                height: parent.height
+                                radius: ThemeService.radiusSmall
+                                rectColor: ThemeService.primary
+                                rectOpacity: NetworkService.connecting ? 0.45 : (connectMouse.containsMouse ? 0.95 : 0.78)
+                                borderOpacityValue: 0.0
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: NetworkService.connecting ? "Connecting" : "Connect"
+                                    color: ThemeService.background
+                                    font.family: ThemeService.fontName
+                                    font.pixelSize: 12
+                                    font.weight: Font.DemiBold
+                                }
+
+                                MouseArea {
+                                    id: connectMouse
+                                    anchors.fill: parent
+                                    enabled: !NetworkService.connecting
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: wifiPopup.submitPassword()
+                                }
+                            }
+                        }
+                    }
+
                     Repeater {
-                        model: NetworkService.wifiEnabled ? NetworkService.wifiNetworks : []
+                        model: NetworkService.wifiEnabled && !wifiPopup.passwordMode ? NetworkService.wifiNetworks : []
 
                         StyledRect {
                             id: wifiItem
@@ -225,14 +383,14 @@ StyledRect {
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: {
                                     NetworkService.connectToNetwork(modelData);
-                                    wifiPopup.close();
+                                    if (!modelData.secured) wifiPopup.close();
                                 }
                             }
                         }
                     }
 
                     Text {
-                        visible: !NetworkService.wifiEnabled || NetworkService.wifiNetworks.length === 0
+                        visible: !wifiPopup.passwordMode && (!NetworkService.wifiEnabled || NetworkService.wifiNetworks.length === 0)
                         width: parent.width
                         text: !NetworkService.wifiEnabled ? "Wi-Fi is off" : (NetworkService.scanning ? "Scanning..." : "No networks found")
                         color: ThemeService.textDim
@@ -254,6 +412,10 @@ StyledRect {
         function open() {
             if (visible) return;
             root.popupOpened();
+            passwordMode = false;
+            passwordNetwork = null;
+            passwordText = "";
+            passwordError = "";
             NetworkService.refresh();
             if (NetworkService.wifiEnabled) NetworkService.rescan();
             popupOpacity = 0;
@@ -267,6 +429,10 @@ StyledRect {
 
         function close() {
             if (!visible) return;
+            passwordMode = false;
+            passwordNetwork = null;
+            passwordText = "";
+            passwordError = "";
             popupOpacity = 0;
             popupScale = 0.94;
             closeTimer.restart();
@@ -275,6 +441,64 @@ StyledRect {
         function toggle() {
             if (visible) close();
             else open();
+        }
+
+        function requestPassword(network) {
+            passwordNetwork = network;
+            passwordText = "";
+            passwordError = "";
+            passwordMode = true;
+            if (!visible) open();
+            Qt.callLater(() => passwordInput.forceActiveFocus());
+        }
+
+        function cancelPassword() {
+            passwordMode = false;
+            passwordNetwork = null;
+            passwordText = "";
+            passwordError = "";
+        }
+
+        function submitPassword() {
+            if (!passwordNetwork || passwordText.length === 0 || NetworkService.connecting) {
+                passwordError = "Password is required";
+                return;
+            }
+            NetworkService.connectToNetworkWithPassword(passwordNetwork, passwordText);
+        }
+
+        function closePasswordIfConnected(ssid) {
+            if (passwordMode && passwordNetwork && ssid === passwordNetwork.ssid) {
+                close();
+            }
+        }
+    }
+
+    Connections {
+        target: NetworkService
+
+        function onPasswordRequired(network) {
+            wifiPopup.requestPassword(network);
+        }
+
+        function onWifiConnectedChanged() {
+            if (NetworkService.wifiConnected) wifiPopup.closePasswordIfConnected(NetworkService.wifiName);
+        }
+
+        function onWifiNameChanged() {
+            wifiPopup.closePasswordIfConnected(NetworkService.wifiName);
+        }
+
+        function onConnectionSucceeded(ssid) {
+            wifiPopup.closePasswordIfConnected(ssid);
+        }
+
+        function onConnectionErrorChanged() {
+            if (wifiPopup.passwordMode && NetworkService.connectionError.length > 0) {
+                wifiPopup.passwordError = NetworkService.connectionError;
+                wifiPopup.passwordText = "";
+                Qt.callLater(() => passwordInput.forceActiveFocus());
+            }
         }
     }
 

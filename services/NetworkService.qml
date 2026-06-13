@@ -12,6 +12,14 @@ Singleton {
     property int wifiSignal: 0
     property bool scanning: false
     property var wifiNetworks: []
+    property bool connecting: false
+    property string connectingSsid: ""
+    property string connectionError: ""
+    property var pendingNetwork: null
+    property bool connectionHadPassword: false
+
+    signal passwordRequired(var network)
+    signal connectionSucceeded(string ssid)
 
     readonly property string wifiIcon: {
         if (!wifiConnected) return "󰤮";
@@ -49,8 +57,39 @@ Singleton {
 
     function connectToNetwork(network) {
         if (!network || !network.ssid || connectProcess.running) return;
+        pendingNetwork = network;
+        connecting = true;
+        connectingSsid = network.ssid;
+        connectionError = "";
+        connectionHadPassword = false;
         connectProcess.command = ["nmcli", "dev", "wifi", "connect", network.ssid];
         connectProcess.running = true;
+    }
+
+    function connectToNetworkWithPassword(network, password) {
+        if (!network || !network.ssid || !password || connectProcess.running) return;
+        pendingNetwork = network;
+        connecting = true;
+        connectingSsid = network.ssid;
+        connectionError = "";
+        connectionHadPassword = true;
+        connectProcess.command = ["nmcli", "dev", "wifi", "connect", network.ssid, "password", password];
+        connectProcess.running = true;
+    }
+
+    function clearPendingConnection() {
+        pendingNetwork = null;
+        connecting = false;
+        connectingSsid = "";
+        connectionHadPassword = false;
+    }
+
+    function errorNeedsPassword(error) {
+        if (!error || error.length === 0) return false;
+        return error.indexOf("Secrets were required") >= 0
+            || error.indexOf("No secrets provided") >= 0
+            || error.indexOf("802-11-wireless-security.psk") >= 0
+            || error.indexOf("password") >= 0;
     }
 
     function splitNmcliLine(line) {
@@ -161,7 +200,32 @@ Singleton {
     Process {
         id: connectProcess
         running: false
-        onExited: root.refresh()
+
+        stdout: StdioCollector {
+            id: connectStdout
+        }
+
+        stderr: StdioCollector {
+            id: connectStderr
+        }
+
+        onExited: exitCode => {
+            let error = connectStderr.text ? connectStderr.text.trim() : "";
+            if (exitCode === 0) {
+                let connectedSsid = root.pendingNetwork && root.pendingNetwork.ssid ? root.pendingNetwork.ssid : root.connectingSsid;
+                root.clearPendingConnection();
+                root.connectionSucceeded(connectedSsid);
+            } else if (root.errorNeedsPassword(error) && root.pendingNetwork && !root.connectionHadPassword) {
+                root.connecting = false;
+                root.connectingSsid = "";
+                root.connectionError = "";
+                root.passwordRequired(root.pendingNetwork);
+            } else {
+                root.connectionError = error.length > 0 ? error : "Connection failed";
+                root.clearPendingConnection();
+            }
+            root.refresh();
+        }
     }
 
     Process {
