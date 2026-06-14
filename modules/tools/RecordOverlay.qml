@@ -78,54 +78,18 @@ PanelWindow {
         Keys.onEscapePressed: ScreenRecorderService.cancelOverlay()
     }
 
-    MouseArea {
+    DragSelector {
         id: selector
         anchors.fill: parent
-        cursorShape: ScreenRecorderService.overlayMode === "screen" ? Qt.PointingHandCursor : Qt.CrossCursor
+        screenMode: ScreenRecorderService.overlayMode === "screen"
         enabled: overlay.visible && ScreenRecorderService.overlayMode !== "window"
-        hoverEnabled: true
 
-        property real startX: 0
-        property real startY: 0
-        property real currentX: 0
-        property real currentY: 0
-        property bool selecting: false
+        onScreenClicked: ScreenRecorderService.startScreen()
 
-        function reset() {
-            startX = 0;
-            startY = 0;
-            currentX = 0;
-            currentY = 0;
-            selecting = false;
-        }
-
-        onPressed: mouse => {
-            if (ScreenRecorderService.overlayMode === "screen") {
-                ScreenRecorderService.startScreen();
-                return;
-            }
-
-            startX = mouse.x;
-            startY = mouse.y;
-            currentX = mouse.x;
-            currentY = mouse.y;
-            selecting = true;
-        }
-
-        onPositionChanged: mouse => {
-            if (!selecting) return;
-            currentX = Math.max(0, Math.min(width, mouse.x));
-            currentY = Math.max(0, Math.min(height, mouse.y));
-        }
-
-        onReleased: {
-            if (!selecting) return;
-            selecting = false;
-
+        onRegionSelected: (localX, localY, localW, localH) => {
             const screenX = Number(overlay.screen?.x ?? targetScreen.x ?? 0);
             const screenY = Number(overlay.screen?.y ?? targetScreen.y ?? 0);
-            ScreenRecorderService.startGeometry(screenX + Math.round(selection.x), screenY + Math.round(selection.y), Math.round(selection.width), Math.round(selection.height));
-            reset();
+            ScreenRecorderService.startGeometry(screenX + localX, screenY + localY, localW, localH);
         }
     }
 

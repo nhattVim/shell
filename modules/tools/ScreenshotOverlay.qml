@@ -91,61 +91,22 @@ PanelWindow {
         Keys.onEscapePressed: ScreenshotService.cancelRegion()
     }
 
-    MouseArea {
+    DragSelector {
         id: selector
         anchors.fill: parent
-        cursorShape: ScreenshotService.overlayMode === "screen" ? Qt.PointingHandCursor : Qt.CrossCursor
+        screenMode: ScreenshotService.overlayMode === "screen"
         enabled: overlay.visible && ScreenshotService.overlayMode !== "window"
-        hoverEnabled: true
 
-        property real startX: 0
-        property real startY: 0
-        property real currentX: 0
-        property real currentY: 0
-        property bool selecting: false
-
-        function reset() {
-            startX = 0;
-            startY = 0;
-            currentX = 0;
-            currentY = 0;
-            selecting = false;
+        onScreenClicked: {
+            const screenX = Number(overlay.screen?.x ?? targetScreen.x ?? 0);
+            const screenY = Number(overlay.screen?.y ?? targetScreen.y ?? 0);
+            ScreenshotService.captureGeometry(screenX, screenY, overlay.width, overlay.height);
         }
 
-        onPressed: mouse => {
-            if (ScreenshotService.overlayMode === "screen") {
-                const screenX = Number(overlay.screen?.x ?? targetScreen.x ?? 0);
-                const screenY = Number(overlay.screen?.y ?? targetScreen.y ?? 0);
-                ScreenshotService.captureGeometry(screenX, screenY, overlay.width, overlay.height);
-                return;
-            }
-
-            startX = mouse.x;
-            startY = mouse.y;
-            currentX = mouse.x;
-            currentY = mouse.y;
-            selecting = true;
-        }
-
-        onPositionChanged: mouse => {
-            if (!selecting) return;
-            currentX = Math.max(0, Math.min(width, mouse.x));
-            currentY = Math.max(0, Math.min(height, mouse.y));
-        }
-
-        onReleased: {
-            if (!selecting) return;
-            selecting = false;
-
-            const localX = Math.round(selection.x);
-            const localY = Math.round(selection.y);
-            const localW = Math.round(selection.width);
-            const localH = Math.round(selection.height);
-
+        onRegionSelected: (localX, localY, localW, localH) => {
             const screenX = Number(overlay.screen?.x ?? targetScreen.x ?? 0);
             const screenY = Number(overlay.screen?.y ?? targetScreen.y ?? 0);
             ScreenshotService.captureGeometry(screenX + localX, screenY + localY, localW, localH);
-            reset();
         }
     }
 

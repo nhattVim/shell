@@ -5,7 +5,7 @@ import "../../../services"
 import "../../../config"
 import "../../../components"
 
-StyledRect {
+PillSurface {
     id: root
 
     property int pillHeight: ThemeService.sideCapsuleHeight
@@ -15,10 +15,7 @@ StyledRect {
 
     height: pillHeight
     width: wifiRow.implicitWidth + ThemeService.radiusLarge
-    radius: height / 2
-    rectColor: ThemeService.background
-    rectOpacity: ThemeService.bgOpacity
-    borderOpacityValue: 0.0
+    onClicked: wifiPopup.toggle()
 
     Row {
         id: wifiRow
@@ -41,15 +38,6 @@ StyledRect {
             color: NetworkService.wifiConnected ? ThemeService.foreground : ThemeService.textDim
             anchors.verticalCenter: parent.verticalCenter
         }
-    }
-
-    MouseArea {
-        anchors.fill: parent
-        hoverEnabled: true
-        cursorShape: Qt.PointingHandCursor
-        onClicked: wifiPopup.toggle()
-        onEntered: root.rectOpacity = 1.0
-        onExited: root.rectOpacity = ThemeService.bgOpacity
     }
 
     PopupSurface {

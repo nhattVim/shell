@@ -5,7 +5,7 @@ import "../../../services"
 import "../../../config"
 import "../../../components"
 
-StyledRect {
+PillSurface {
     id: root
 
     property int pillHeight: ThemeService.sideCapsuleHeight
@@ -21,10 +21,7 @@ StyledRect {
 
     height: pillHeight
     width: batteryRow.implicitWidth + ThemeService.radiusLarge
-    radius: height / 2
-    rectColor: ThemeService.background
-    rectOpacity: ThemeService.bgOpacity
-    borderOpacityValue: 0.0
+    onClicked: batteryPopup.toggle()
 
     Row {
         id: batteryRow
@@ -47,15 +44,6 @@ StyledRect {
             color: ThemeService.foreground
             anchors.verticalCenter: parent.verticalCenter
         }
-    }
-
-    MouseArea {
-        anchors.fill: parent
-        hoverEnabled: true
-        cursorShape: Qt.PointingHandCursor
-        onClicked: batteryPopup.toggle()
-        onEntered: root.rectOpacity = 1.0
-        onExited: root.rectOpacity = ThemeService.bgOpacity
     }
 
     PopupSurface {

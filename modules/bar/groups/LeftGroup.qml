@@ -13,14 +13,14 @@ Row {
     property int pillHeight: ThemeService.sideCapsuleHeight
 
     // Launcher Pill
-    StyledRect {
+    PillSurface {
         id: launcherPill
         height: root.pillHeight
         width: height
-        radius: height / 2
-        rectColor: ThemeService.background
-        rectOpacity: ThemeService.bgOpacity
-        borderOpacityValue: 0.0
+        onClicked: {
+            LauncherService.buildIndex();
+            OverlayService.toggleOverlay("launcher");
+        }
 
         Text {
             anchors.centerIn: parent
@@ -28,19 +28,6 @@ Row {
             font.family: ThemeService.iconFont
             font.pixelSize: 18
             color: ThemeService.primary
-        }
-
-        MouseArea {
-            id: launcherMouse
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onClicked: {
-                LauncherService.buildIndex();
-                OverlayService.toggleOverlay("launcher");
-            }
-            onEntered: launcherPill.rectOpacity = 1.0
-            onExited: launcherPill.rectOpacity = ThemeService.bgOpacity
         }
     }
 

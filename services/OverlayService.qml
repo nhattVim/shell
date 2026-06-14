@@ -14,6 +14,7 @@ Singleton {
 
     readonly property bool overlayOpen: activeOverlay !== ""
     readonly property bool islandOpen: islandState !== "windowTitle"
+    readonly property bool focusSurfaceOpen: overlayOpen || islandOpen
 
     function normalizeOverlay(name) {
         if (name === "launcher" || name === "clipboard" || name === "wallpaper") return name;
@@ -26,13 +27,14 @@ Singleton {
     }
 
     function rememberFocus() {
+        if (focusSurfaceOpen && restoreWindowAddress !== "") return;
         if (WindowService.activeWindowAddress !== "") {
             restoreWindowAddress = WindowService.activeWindowAddress;
         }
     }
 
     function restoreFocus() {
-        if (restoreWindowAddress === "" || restoreFocusProcess.running) return;
+        if (focusSurfaceOpen || restoreWindowAddress === "" || restoreFocusProcess.running) return;
         restoreFocusProcess.command = ["hyprctl", "dispatch", "focuswindow", "address:" + restoreWindowAddress];
         restoreFocusProcess.running = true;
     }
