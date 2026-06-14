@@ -15,13 +15,8 @@ ShellRoot {
     id: shellRoot
 
     ShellIpc {
-        shellRoot: shellRoot
     }
 
-    // State managing the visibility of the app launcher
-    property bool launcherActive: false
-    property bool clipboardActive: false
-    property bool wallpaperPickerActive: false
     readonly property bool idleServiceLoaded: IdleService.enabled
 
     // Instantiates the Wallpaper background on all connected monitors
@@ -109,13 +104,11 @@ ShellRoot {
 
     // Instantiates the clipboard history overlay on the primary monitor
     Clipboard {
-        shellRoot: shellRoot
         screen: Quickshell.screens[0]
     }
 
     // Instantiates the wallpaper picker overlay on the primary monitor
     WallpaperPicker {
-        shellRoot: shellRoot
         screen: Quickshell.screens[0]
     }
 

@@ -86,7 +86,7 @@ Singleton {
             onStreamFinished: root.parseList(text)
         }
 
-        onExited: {
+        onExited: exitCode => {
             root.loading = false;
             if (exitCode !== 0) root.error = "Unable to read clipboard history";
         }

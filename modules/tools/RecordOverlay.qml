@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Wayland
 import "../../services"
 import "../../config"
+import "../../components"
 
 PanelWindow {
     id: overlay
@@ -55,52 +56,19 @@ PanelWindow {
         opacity: 0.35
     }
 
-    Repeater {
-        model: ScreenRecorderService.overlayMode === "window" ? ScreenshotService.windows : []
-
-        delegate: Rectangle {
-            required property int index
-            required property var modelData
-
-            readonly property real screenX: Number(overlay.screen?.x ?? targetScreen.x ?? 0)
-            readonly property real screenY: Number(overlay.screen?.y ?? targetScreen.y ?? 0)
-            readonly property bool onThisScreen: modelData.x + modelData.width > screenX
-                && modelData.x < screenX + overlay.width
-                && modelData.y + modelData.height > screenY
-                && modelData.y < screenY + overlay.height
-
-            x: modelData.x - screenX
-            y: modelData.y - screenY
-            width: modelData.width
-            height: modelData.height
-            z: 5 + index
-            visible: onThisScreen
-            color: windowMouse.containsMouse ? Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.22) : "transparent"
-            border.color: windowMouse.containsMouse ? ThemeService.primary : Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.55)
-            border.width: 2
-            radius: 8
-
-            MouseArea {
-                id: windowMouse
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: ScreenRecorderService.startGeometry(modelData.x, modelData.y, modelData.width, modelData.height)
-            }
-        }
+    WindowTargetOverlay {
+        anchors.fill: parent
+        windows: ScreenRecorderService.overlayMode === "window" ? ScreenshotService.windows : []
+        screenX: Number(overlay.screen?.x ?? targetScreen.x ?? 0)
+        screenY: Number(overlay.screen?.y ?? targetScreen.y ?? 0)
+        inactiveBorderOpacity: 0.55
+        showTitle: false
+        onSelected: windowData => ScreenRecorderService.startGeometry(windowData.x, windowData.y, windowData.width, windowData.height)
     }
 
-    Rectangle {
+    SelectionRect {
         id: selection
-        x: Math.min(selector.startX, selector.currentX)
-        y: Math.min(selector.startY, selector.currentY)
-        width: Math.abs(selector.currentX - selector.startX)
-        height: Math.abs(selector.currentY - selector.startY)
-        visible: selector.selecting
-        color: Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.18)
-        border.color: ThemeService.primary
-        border.width: 2
-        radius: 6
+        selector: selector
     }
 
     FocusScope {
@@ -178,46 +146,20 @@ PanelWindow {
             anchors.centerIn: parent
             spacing: 8
 
-            Rectangle {
+            ToolModeButton {
                 width: 40
                 height: 40
-                radius: 20
-                color: ScreenRecorderService.recordAudioOutput ? Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.75) : "transparent"
-
-                Text {
-                    anchors.centerIn: parent
-                    text: ScreenRecorderService.recordAudioOutput ? "󰕾" : "󰝟"
-                    font.family: ThemeService.iconFont
-                    font.pixelSize: 18
-                    color: ScreenRecorderService.recordAudioOutput ? ThemeService.background : ThemeService.foreground
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: ScreenRecorderService.toggleAudioOutput()
-                }
+                icon: ScreenRecorderService.recordAudioOutput ? "󰕾" : "󰝟"
+                active: ScreenRecorderService.recordAudioOutput
+                onClicked: ScreenRecorderService.toggleAudioOutput()
             }
 
-            Rectangle {
+            ToolModeButton {
                 width: 40
                 height: 40
-                radius: 20
-                color: ScreenRecorderService.recordAudioInput ? Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.75) : "transparent"
-
-                Text {
-                    anchors.centerIn: parent
-                    text: ScreenRecorderService.recordAudioInput ? "󰍬" : "󰍭"
-                    font.family: ThemeService.iconFont
-                    font.pixelSize: 18
-                    color: ScreenRecorderService.recordAudioInput ? ThemeService.background : ThemeService.foreground
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: ScreenRecorderService.toggleAudioInput()
-                }
+                icon: ScreenRecorderService.recordAudioInput ? "󰍬" : "󰍭"
+                active: ScreenRecorderService.recordAudioInput
+                onClicked: ScreenRecorderService.toggleAudioInput()
             }
 
             Rectangle {
@@ -234,27 +176,14 @@ PanelWindow {
                     { mode: "screen", icon: "󰍹" }
                 ]
 
-                delegate: Rectangle {
+                delegate: ToolModeButton {
                     required property var modelData
 
                     width: 40
                     height: 40
-                    radius: 20
-                    color: ScreenRecorderService.overlayMode === modelData.mode ? Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.75) : "transparent"
-
-                    Text {
-                        anchors.centerIn: parent
-                        text: modelData.icon
-                        font.family: ThemeService.iconFont
-                        font.pixelSize: 18
-                        color: ScreenRecorderService.overlayMode === modelData.mode ? ThemeService.background : ThemeService.foreground
-                    }
-
-                    MouseArea {
-                        anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: ScreenRecorderService.setOverlayMode(modelData.mode)
-                    }
+                    icon: modelData.icon
+                    active: ScreenRecorderService.overlayMode === modelData.mode
+                    onClicked: ScreenRecorderService.setOverlayMode(modelData.mode)
                 }
             }
         }

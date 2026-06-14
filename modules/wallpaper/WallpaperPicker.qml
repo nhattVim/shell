@@ -8,8 +8,6 @@ import "../../components"
 PanelWindow {
     id: root
 
-    required property var shellRoot
-
     anchors {
         top: true
         bottom: true
@@ -17,14 +15,14 @@ PanelWindow {
         right: true
     }
 
-    WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
+    WlrLayershell.keyboardFocus: visible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "ei:wallpaper-picker"
     exclusionMode: ExclusionMode.Ignore
     exclusiveZone: 0
 
     color: "transparent"
-    visible: shellRoot.wallpaperPickerActive
+    visible: OverlayService.activeOverlay === "wallpaper"
 
     property string searchText: ""
     property var results: filterWallpapers(searchText)
@@ -37,36 +35,26 @@ PanelWindow {
             WallpaperService.refresh();
             searchText = "";
             searchInput.text = "";
-            selectedIndex = Math.max(0, WallpaperService.currentIndex);
-            searchInput.forceActiveFocus();
+            selectedIndex = NavigationService.clampIndex(WallpaperService.currentIndex, results.length);
+            searchInput.forceInputFocus();
         }
     }
 
-    Rectangle {
+    ClickOutsideArea {
         anchors.fill: parent
-        color: ThemeService.scrimColor
-
-        MouseArea {
-            anchors.fill: parent
-            onClicked: shellRoot.wallpaperPickerActive = false
-        }
+        fillColor: ThemeService.scrimColor
+        onClicked: OverlayService.closeOverlay("wallpaper")
     }
 
-    StyledRect {
+    OverlayCard {
         id: pickerCard
         width: Math.min(980, root.width - 64)
         height: Math.min(580, root.height - 64)
         anchors.centerIn: parent
         radius: 22
-        clip: true
         rectColor: ThemeService.background
         rectOpacity: 0.94
         borderOpacityValue: 0.18
-
-        MouseArea {
-            anchors.fill: parent
-            onClicked: {}
-        }
 
         Column {
             anchors.fill: parent
@@ -118,90 +106,52 @@ PanelWindow {
                     }
                 }
 
-                Rectangle {
-                    id: searchBox
+                SearchField {
+                    id: searchInput
                     anchors.verticalCenter: parent.verticalCenter
                     width: parent.width - 184 - 42 - 24
                     height: 40
                     radius: 14
-                    color: ThemeService.surface
-                    border.width: 1
-                    border.color: searchInput.activeFocus
-                        ? Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.66)
-                        : Qt.rgba(ThemeService.border.r, ThemeService.border.g, ThemeService.border.b, 0.12)
+                    fieldColor: ThemeService.surface
+                    focusedBorderColor: Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.66)
+                    idleBorderColor: Qt.rgba(ThemeService.border.r, ThemeService.border.g, ThemeService.border.b, 0.12)
+                    horizontalPadding: 14
+                    fieldSpacing: 10
+                    placeholder: "Search name or path..."
 
-                    Row {
-                        anchors.fill: parent
-                        anchors.leftMargin: 14
-                        anchors.rightMargin: 14
-                        spacing: 10
+                    onTextChanged: {
+                        root.searchText = text;
+                        root.selectedIndex = 0;
+                    }
 
-                        Text {
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: "󰍉"
-                            color: searchInput.activeFocus ? ThemeService.primary : ThemeService.textDim
-                            font.family: ThemeService.iconFont
-                            font.pixelSize: 16
-                        }
+                    onKeyPressed: event => {
+                        const count = wallpaperGrid.count;
+                        const columns = Math.max(1, Math.floor(wallpaperGrid.width / wallpaperGrid.cellWidth));
 
-                        TextInput {
-                            id: searchInput
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: parent.width - 28
-                            color: ThemeService.foreground
-                            selectionColor: Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.35)
-                            selectedTextColor: ThemeService.textBright
-                            font.family: ThemeService.fontName
-                            font.pixelSize: 13
-                            selectByMouse: true
-                            clip: true
-
-                            Text {
-                                anchors.verticalCenter: parent.verticalCenter
-                                width: parent.width
-                                text: "Search name or path..."
-                                color: ThemeService.textDim
-                                font.family: ThemeService.fontName
-                                font.pixelSize: 13
-                                visible: parent.text.length === 0
-                                elide: Text.ElideRight
-                            }
-
-                            onTextChanged: {
-                                root.searchText = text;
-                                root.selectedIndex = 0;
-                            }
-
-                            Keys.onPressed: event => {
-                                const count = wallpaperGrid.count;
-                                const columns = Math.max(1, Math.floor(wallpaperGrid.width / wallpaperGrid.cellWidth));
-
-                                if (event.key === Qt.Key_Tab && !(event.modifiers & Qt.ShiftModifier)) {
-                                    root.selectNext();
-                                    event.accepted = true;
-                                } else if (event.key === Qt.Key_Backtab || (event.key === Qt.Key_Tab && (event.modifiers & Qt.ShiftModifier))) {
-                                    root.selectPrevious();
-                                    event.accepted = true;
-                                } else if (event.key === Qt.Key_Right) {
-                                    root.selectNext();
-                                    event.accepted = true;
-                                } else if (event.key === Qt.Key_Left) {
-                                    root.selectPrevious();
-                                    event.accepted = true;
-                                } else if (event.key === Qt.Key_Down) {
-                                    if (count > 0) root.selectedIndex = Math.min(count - 1, root.selectedIndex + columns);
-                                    event.accepted = true;
-                                } else if (event.key === Qt.Key_Up) {
-                                    if (count > 0) root.selectedIndex = Math.max(0, root.selectedIndex - columns);
-                                    event.accepted = true;
-                                } else if (event.key === Qt.Key_Enter || event.key === Qt.Key_Return) {
-                                    root.applySelected();
-                                    event.accepted = true;
-                                } else if (event.key === Qt.Key_Escape) {
-                                    shellRoot.wallpaperPickerActive = false;
-                                    event.accepted = true;
-                                }
-                            }
+                        if (event.key === Qt.Key_Tab && !(event.modifiers & Qt.ShiftModifier)) {
+                            root.selectNext();
+                            event.accepted = true;
+                        } else if (event.key === Qt.Key_Backtab || (event.key === Qt.Key_Tab && (event.modifiers & Qt.ShiftModifier))) {
+                            root.selectPrevious();
+                            event.accepted = true;
+                        } else if (event.key === Qt.Key_Right) {
+                            root.selectNext();
+                            event.accepted = true;
+                        } else if (event.key === Qt.Key_Left) {
+                            root.selectPrevious();
+                            event.accepted = true;
+                        } else if (event.key === Qt.Key_Down) {
+                            root.selectedIndex = NavigationService.offsetIndex(root.selectedIndex, count, columns);
+                            event.accepted = true;
+                        } else if (event.key === Qt.Key_Up) {
+                            root.selectedIndex = NavigationService.offsetIndex(root.selectedIndex, count, -columns);
+                            event.accepted = true;
+                        } else if (event.key === Qt.Key_Enter || event.key === Qt.Key_Return) {
+                            root.applySelected();
+                            event.accepted = true;
+                        } else if (event.key === Qt.Key_Escape) {
+                            OverlayService.closeOverlay("wallpaper");
+                            event.accepted = true;
                         }
                     }
                 }
@@ -341,7 +291,7 @@ PanelWindow {
                                     anchors.fill: parent
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
-                                    onClicked: shellRoot.wallpaperPickerActive = false
+                                    onClicked: OverlayService.closeOverlay("wallpaper")
                                 }
                             }
                         }
@@ -498,7 +448,7 @@ PanelWindow {
                                     onEntered: root.selectedIndex = index
                                     onClicked: {
                                         WallpaperService.setWallpaperByPath(modelData);
-                                        shellRoot.wallpaperPickerActive = false;
+                                        OverlayService.closeOverlay("wallpaper");
                                     }
                                 }
                             }
@@ -603,17 +553,15 @@ PanelWindow {
     function applySelected() {
         if (selectedIndex >= 0 && selectedIndex < results.length) {
             WallpaperService.setWallpaperByPath(results[selectedIndex]);
-            shellRoot.wallpaperPickerActive = false;
+            OverlayService.closeOverlay("wallpaper");
         }
     }
 
     function selectNext() {
-        if (results.length <= 0) return;
-        selectedIndex = (selectedIndex + 1) % results.length;
+        selectedIndex = NavigationService.nextIndex(selectedIndex, results.length);
     }
 
     function selectPrevious() {
-        if (results.length <= 0) return;
-        selectedIndex = (selectedIndex - 1 + results.length) % results.length;
+        selectedIndex = NavigationService.previousIndex(selectedIndex, results.length);
     }
 }

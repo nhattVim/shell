@@ -19,6 +19,18 @@ Row {
         closePopupsToken++;
     }
 
+    onIslandStateChanged: {
+        if (islandState !== "windowTitle") closePopups();
+    }
+
+    Connections {
+        target: OverlayService
+
+        function onActiveOverlayChanged() {
+            if (OverlayService.activeOverlay !== "") root.closePopups();
+        }
+    }
+
     WifiPill {
         pillHeight: root.pillHeight
         closePopupsToken: root.closePopupsToken
@@ -45,6 +57,9 @@ Row {
     PowerPill {
         pillHeight: root.pillHeight
         islandState: root.islandState
-        onRequestIslandState: state => root.requestIslandState(state)
+        onRequestIslandState: state => {
+            root.closePopups();
+            root.requestIslandState(state);
+        }
     }
 }

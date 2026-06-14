@@ -37,7 +37,7 @@ Row {
             cursorShape: Qt.PointingHandCursor
             onClicked: {
                 LauncherService.buildIndex();
-                shellRoot.launcherActive = !shellRoot.launcherActive;
+                OverlayService.toggleOverlay("launcher");
             }
             onEntered: launcherPill.rectOpacity = 1.0
             onExited: launcherPill.rectOpacity = ThemeService.bgOpacity

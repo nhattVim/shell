@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Wayland
 import "../../services"
 import "../../config"
+import "../../components"
 
 PanelWindow {
     id: overlay
@@ -55,66 +56,19 @@ PanelWindow {
         opacity: 0.35
     }
 
-    Repeater {
-        model: ScreenshotService.overlayMode === "window" ? ScreenshotService.windows : []
-
-        delegate: Rectangle {
-            required property int index
-            required property var modelData
-
-            readonly property real screenX: Number(overlay.screen?.x ?? targetScreen.x ?? 0)
-            readonly property real screenY: Number(overlay.screen?.y ?? targetScreen.y ?? 0)
-            readonly property bool onThisScreen: modelData.x + modelData.width > screenX
-                && modelData.x < screenX + overlay.width
-                && modelData.y + modelData.height > screenY
-                && modelData.y < screenY + overlay.height
-
-            x: modelData.x - screenX
-            y: modelData.y - screenY
-            width: modelData.width
-            height: modelData.height
-            z: 5 + index
-            visible: onThisScreen
-            color: windowMouse.containsMouse ? Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.22) : "transparent"
-            border.color: windowMouse.containsMouse ? ThemeService.primary : Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.5)
-            border.width: 2
-            radius: 8
-
-            Text {
-                anchors.left: parent.left
-                anchors.top: parent.top
-                anchors.margins: 8
-                width: parent.width - 16
-                text: modelData.app || modelData.title || "Window"
-                font.family: ThemeService.fontName
-                font.pixelSize: 12
-                font.weight: Font.Bold
-                color: ThemeService.textBright
-                elide: Text.ElideRight
-                visible: parent.width > 90 && parent.height > 48
-            }
-
-            MouseArea {
-                id: windowMouse
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: ScreenshotService.captureGeometry(modelData.x, modelData.y, modelData.width, modelData.height)
-            }
-        }
+    WindowTargetOverlay {
+        anchors.fill: parent
+        windows: ScreenshotService.overlayMode === "window" ? ScreenshotService.windows : []
+        screenX: Number(overlay.screen?.x ?? targetScreen.x ?? 0)
+        screenY: Number(overlay.screen?.y ?? targetScreen.y ?? 0)
+        inactiveBorderOpacity: 0.5
+        showTitle: true
+        onSelected: windowData => ScreenshotService.captureGeometry(windowData.x, windowData.y, windowData.width, windowData.height)
     }
 
-    Rectangle {
+    SelectionRect {
         id: selection
-        x: Math.min(selector.startX, selector.currentX)
-        y: Math.min(selector.startY, selector.currentY)
-        width: Math.abs(selector.currentX - selector.startX)
-        height: Math.abs(selector.currentY - selector.startY)
-        visible: selector.selecting
-        color: Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.18)
-        border.color: ThemeService.primary
-        border.width: 2
-        radius: 6
+        selector: selector
     }
 
     Text {
@@ -219,28 +173,15 @@ PanelWindow {
                     { mode: "screen", icon: "󰍹" }
                 ]
 
-                delegate: Rectangle {
+                delegate: ToolModeButton {
                     required property var modelData
 
                     width: 44
                     height: 44
-                    radius: 22
-                    color: ScreenshotService.overlayMode === modelData.mode ? Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.75) : "transparent"
-
-                    Text {
-                        anchors.centerIn: parent
-                        text: modelData.icon
-                        font.family: ThemeService.iconFont
-                        font.pixelSize: 19
-                        color: ScreenshotService.overlayMode === modelData.mode ? ThemeService.background : ThemeService.foreground
-                    }
-
-                    MouseArea {
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: ScreenshotService.setOverlayMode(modelData.mode)
-                    }
+                    icon: modelData.icon
+                    iconPixelSize: 19
+                    active: ScreenshotService.overlayMode === modelData.mode
+                    onClicked: ScreenshotService.setOverlayMode(modelData.mode)
                 }
             }
         }

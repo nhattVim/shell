@@ -115,7 +115,7 @@ Item {
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: root.requestIslandState("media")
+                            onClicked: OverlayService.toggleDashboard("dashboard")
                         }
                     }
 
@@ -166,8 +166,10 @@ Item {
                 visible: root.islandState === "media"
                 Dashboard {
                     anchors.fill: parent
+                    visible: parent.visible
                     activePlayer: root.activePlayer
-                    onRequestClose: root.requestIslandState("windowTitle")
+                    currentPage: OverlayService.dashboardPage
+                    onRequestClose: OverlayService.closeIsland()
                 }
             }
         }
@@ -178,11 +180,11 @@ Item {
         interval: 3000
         running: false
         repeat: false
-        onTriggered: if (root.islandState !== "media" && root.islandState !== "powerMenu" && root.islandState !== "batteryMenu") root.requestIslandState("windowTitle")
+        onTriggered: if (root.islandState !== "media" && root.islandState !== "powerMenu" && root.islandState !== "batteryMenu") OverlayService.closeIsland()
     }
 
     function triggerIsland(state) {
-        root.requestIslandState(state);
+        OverlayService.setIslandState(state);
         islandTimer.restart();
     }
 }

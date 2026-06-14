@@ -65,14 +65,12 @@ StyledRect {
                     }
                 }
 
-                PopupWindow {
+                PopupSurface {
                     id: trayPopup
 
                     property int popupWidth: 240
                     property int popupMaxHeight: 420
                     property int popupPadding: 8
-                    property real popupOpacity: 0
-                    property real popupScale: 0.94
 
                     anchor.item: trayDelegate
                     anchor.rect.x: trayDelegate.width - implicitWidth
@@ -82,98 +80,85 @@ StyledRect {
 
                     implicitWidth: popupWidth
                     implicitHeight: Math.min(menuColumn.implicitHeight + popupPadding * 2, popupMaxHeight)
-                    color: "transparent"
-                    grabFocus: true
-                    visible: false
+
+                    onOpening: {
+                        OverlayService.closeIsland(false);
+                        root.popupOpened();
+                    }
 
                     QsMenuOpener {
                         id: menuOpener
                         menu: trayDelegate.modelData.menu
                     }
 
-                    Rectangle {
+                    Flickable {
                         anchors.fill: parent
-                        radius: ThemeService.radiusMedium
-                        color: Qt.rgba(ThemeService.background.r, ThemeService.background.g, ThemeService.background.b, ThemeService.bgOpacityHigh)
-                        border.width: 1
-                        border.color: Qt.rgba(ThemeService.border.r, ThemeService.border.g, ThemeService.border.b, ThemeService.borderOpacity)
-                        opacity: trayPopup.popupOpacity
-                        scale: trayPopup.popupScale
-                        transformOrigin: Item.TopRight
+                        contentWidth: width
+                        contentHeight: menuColumn.implicitHeight
+                        clip: true
 
-                        Behavior on opacity { NumberAnimation { duration: ThemeService.animDuration; easing.type: Easing.OutCubic } }
-                        Behavior on scale { NumberAnimation { duration: ThemeService.animDuration; easing.type: Easing.OutCubic } }
+                        Column {
+                            id: menuColumn
+                            width: parent.width
+                            spacing: 2
 
-                        Flickable {
-                            anchors.fill: parent
-                            anchors.margins: trayPopup.popupPadding
-                            contentWidth: width
-                            contentHeight: menuColumn.implicitHeight
-                            clip: true
+                            Repeater {
+                                model: menuOpener.children ? menuOpener.children.values : []
 
-                            Column {
-                                id: menuColumn
-                                width: parent.width
-                                spacing: 2
+                                Column {
+                                    required property var modelData
+                                    width: menuColumn.width
+                                    spacing: 2
+                                    property bool submenuExpanded: false
 
-                                Repeater {
-                                    model: menuOpener.children ? menuOpener.children.values : []
+                                    TrayMenuItem {
+                                        width: parent.width
+                                        textStr: modelData.text || ""
+                                        iconSource: modelData.icon || ""
+                                        isSeparator: modelData.isSeparator || false
+                                        hasSubmenu: modelData.hasChildren || false
+                                        expanded: parent.submenuExpanded
+                                        buttonType: modelData.buttonType || 0
+                                        checkState: modelData.checkState || 0
+
+                                        onClicked: {
+                                            if (modelData.hasChildren) {
+                                                parent.submenuExpanded = !parent.submenuExpanded;
+                                            } else {
+                                                if (modelData.triggered) modelData.triggered();
+                                                else if (modelData.activate) modelData.activate();
+                                                trayPopup.close();
+                                            }
+                                        }
+                                    }
 
                                     Column {
-                                        required property var modelData
-                                        width: menuColumn.width
+                                        visible: parent.submenuExpanded && modelData.hasChildren
+                                        width: parent.width
                                         spacing: 2
-                                        property bool submenuExpanded: false
 
-                                        TrayMenuItem {
-                                            width: parent.width
-                                            textStr: modelData.text || ""
-                                            iconSource: modelData.icon || ""
-                                            isSeparator: modelData.isSeparator || false
-                                            hasSubmenu: modelData.hasChildren || false
-                                            expanded: parent.submenuExpanded
-                                            buttonType: modelData.buttonType || 0
-                                            checkState: modelData.checkState || 0
+                                        QsMenuOpener {
+                                            id: subMenuOpener
+                                            menu: modelData.hasChildren ? modelData : null
+                                        }
 
-                                            onClicked: {
-                                                if (modelData.hasChildren) {
-                                                    parent.submenuExpanded = !parent.submenuExpanded;
-                                                } else {
+                                        Repeater {
+                                            model: subMenuOpener.children ? subMenuOpener.children.values : []
+
+                                            TrayMenuItem {
+                                                required property var modelData
+                                                width: parent.width
+                                                depth: 1
+                                                textStr: modelData.text || ""
+                                                iconSource: modelData.icon || ""
+                                                isSeparator: modelData.isSeparator || false
+                                                buttonType: modelData.buttonType || 0
+                                                checkState: modelData.checkState || 0
+
+                                                onClicked: {
                                                     if (modelData.triggered) modelData.triggered();
                                                     else if (modelData.activate) modelData.activate();
                                                     trayPopup.close();
-                                                }
-                                            }
-                                        }
-
-                                        Column {
-                                            visible: parent.submenuExpanded && modelData.hasChildren
-                                            width: parent.width
-                                            spacing: 2
-
-                                            QsMenuOpener {
-                                                id: subMenuOpener
-                                                menu: modelData.hasChildren ? modelData : null
-                                            }
-
-                                            Repeater {
-                                                model: subMenuOpener.children ? subMenuOpener.children.values : []
-
-                                                TrayMenuItem {
-                                                    required property var modelData
-                                                    width: parent.width
-                                                    depth: 1
-                                                    textStr: modelData.text || ""
-                                                    iconSource: modelData.icon || ""
-                                                    isSeparator: modelData.isSeparator || false
-                                                    buttonType: modelData.buttonType || 0
-                                                    checkState: modelData.checkState || 0
-
-                                                    onClicked: {
-                                                        if (modelData.triggered) modelData.triggered();
-                                                        else if (modelData.activate) modelData.activate();
-                                                        trayPopup.close();
-                                                    }
                                                 }
                                             }
                                         }
@@ -181,36 +166,6 @@ StyledRect {
                                 }
                             }
                         }
-                    }
-
-                    Timer {
-                        id: closeTimer
-                        interval: ThemeService.animDuration + 50
-                        onTriggered: trayPopup.visible = false
-                    }
-
-                    function open() {
-                        if (visible) return;
-                        root.popupOpened();
-                        popupOpacity = 0;
-                        popupScale = 0.94;
-                        visible = true;
-                        Qt.callLater(() => {
-                            popupOpacity = 1;
-                            popupScale = 1;
-                        });
-                    }
-
-                    function close() {
-                        if (!visible) return;
-                        popupOpacity = 0;
-                        popupScale = 0.94;
-                        closeTimer.restart();
-                    }
-
-                    function toggle() {
-                        if (visible) close();
-                        else open();
                     }
                 }
 

@@ -4,6 +4,7 @@ import Quickshell.Wayland
 import Quickshell.Services.Mpris
 import "../../services"
 import "../../config"
+import "../../components"
 import "../bar/groups"
 
 PanelWindow {
@@ -21,7 +22,7 @@ PanelWindow {
     exclusionMode: ExclusionMode.Ignore
 
     // Robust keyboard focus logic
-    readonly property bool islandOverlayOpen: islandState !== "windowTitle"
+    readonly property bool islandOverlayOpen: OverlayService.islandOpen
 
     WlrLayershell.keyboardFocus: islandOverlayOpen ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
     WlrLayershell.layer: WlrLayer.Top
@@ -41,12 +42,12 @@ PanelWindow {
         ]
     }
 
-    MouseArea {
+    ClickOutsideArea {
         id: clickOutsideDetector
         anchors.fill: parent
         visible: barWindow.islandOverlayOpen
         z: -1
-        onPressed: barWindow.islandState = "windowTitle"
+        onClicked: OverlayService.closeIsland()
     }
 
     // --- VISIBLE UI LAYER ---
@@ -70,12 +71,12 @@ PanelWindow {
             anchors.topMargin: 0
             baseHeight: ThemeService.barTotalHeight
             
-            islandState: barWindow.islandState
+            islandState: OverlayService.islandState
             activePlayer: barWindow.activePlayer
             triggerPower: barWindow.triggerPower
             triggerProfile: barWindow.triggerProfile
             
-            onRequestIslandState: state => barWindow.islandState = state
+            onRequestIslandState: state => OverlayService.setIslandState(state)
         }
 
         RightGroup {
@@ -86,13 +87,12 @@ PanelWindow {
             anchors.topMargin: ThemeService.barTotalHeight - ThemeService.sideCapsuleHeight
             pillHeight: ThemeService.sideCapsuleHeight
             
-            islandState: barWindow.islandState
+            islandState: OverlayService.islandState
             triggerProfile: barWindow.triggerProfile
-            onRequestIslandState: state => barWindow.islandState = state
+            onRequestIslandState: state => OverlayService.setIslandState(state)
         }
     }
 
-    property string islandState: "windowTitle"
     function chooseActivePlayer() {
         const players = Mpris.players.values || [];
         if (players.length === 0) return null;
@@ -112,19 +112,19 @@ PanelWindow {
     readonly property var activePlayer: chooseActivePlayer()
 
     function triggerPower(action) {
-        if (action === "close") { barWindow.islandState = "windowTitle"; return; }
+        if (action === "close") { OverlayService.closeIsland(); return; }
         let p = Qt.createQmlObject('import Quickshell.Io; Process { }', barWindow);
         if (action === "shutdown") p.command = ["systemctl", "poweroff"];
         else if (action === "reboot") p.command = ["reboot"];
         else if (action === "logout") p.command = ["hyprctl", "dispatch", "exit"];
         p.onExited.connect(() => p.destroy());
         p.running = true;
-        barWindow.islandState = "windowTitle";
+        OverlayService.closeIsland();
     }
 
     function triggerProfile(profile) {
-        if (profile === "close") { barWindow.islandState = "windowTitle"; return; }
+        if (profile === "close") { OverlayService.closeIsland(); return; }
         PowerProfileService.setProfile(profile);
-        barWindow.islandState = "windowTitle";
+        OverlayService.closeIsland();
     }
 }

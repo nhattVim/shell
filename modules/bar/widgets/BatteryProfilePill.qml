@@ -58,13 +58,11 @@ StyledRect {
         onExited: root.rectOpacity = ThemeService.bgOpacity
     }
 
-    PopupWindow {
+    PopupSurface {
         id: batteryPopup
 
         property int popupWidth: 306
         property int popupPadding: 10
-        property real popupOpacity: 0
-        property real popupScale: 0.94
 
         anchor.item: root
         anchor.rect.x: root.width - implicitWidth
@@ -74,111 +72,43 @@ StyledRect {
 
         implicitWidth: popupWidth
         implicitHeight: profileRow.implicitHeight + popupPadding * 2
-        color: "transparent"
-        grabFocus: true
-        visible: false
 
-        Rectangle {
-            anchors.fill: parent
-            radius: ThemeService.radiusMedium
-            color: Qt.rgba(ThemeService.background.r, ThemeService.background.g, ThemeService.background.b, ThemeService.bgOpacityHigh)
-            border.width: 1
-            border.color: Qt.rgba(ThemeService.border.r, ThemeService.border.g, ThemeService.border.b, ThemeService.borderOpacity)
-            opacity: batteryPopup.popupOpacity
-            scale: batteryPopup.popupScale
-            transformOrigin: Item.TopRight
+        onOpening: {
+            OverlayService.closeIsland(false);
+            root.popupOpened();
+            PowerProfileService.refresh();
+        }
 
-            Behavior on opacity { NumberAnimation { duration: ThemeService.animDuration; easing.type: Easing.OutCubic } }
-            Behavior on scale { NumberAnimation { duration: ThemeService.animDuration; easing.type: Easing.OutCubic } }
+        Row {
+            id: profileRow
+            anchors.centerIn: parent
+            spacing: ThemeService.spacingSmall
 
-            Row {
-                id: profileRow
-                anchors.centerIn: parent
-                spacing: ThemeService.spacingSmall
+            Repeater {
+                model: root.profileActions
 
-                Repeater {
-                    model: root.profileActions
+                ActionTile {
+                    id: profileItem
+                    required property var modelData
 
-                    StyledRect {
-                        id: profileItem
-                        required property var modelData
-                        readonly property bool active: PowerProfileService.activeProfile === modelData.action
-                        width: 90
-                        height: 76
-                        radius: ThemeService.radiusSmall
-                        rectColor: active ? ThemeService.primary : ThemeService.surfaceBright
-                        rectOpacity: active ? 0.22 : (profileMouse.containsMouse ? 0.55 : 0.2)
-                        borderColor: active ? ThemeService.primary : ThemeService.border
-                        borderOpacityValue: active ? 0.55 : (profileMouse.containsMouse ? 0.2 : 0.0)
-
-                        Column {
-                            anchors.centerIn: parent
-                            spacing: ThemeService.spacingSmall
-
-                            Text {
-                                text: modelData.icon
-                                font.family: ThemeService.iconFont
-                                font.pixelSize: 23
-                                color: modelData.color
-                                anchors.horizontalCenter: parent.horizontalCenter
-                            }
-
-                            Text {
-                                width: profileItem.width - 12
-                                text: modelData.label
-                                color: profileItem.active ? ThemeService.textBright : ThemeService.foreground
-                                font.family: ThemeService.fontName
-                                font.pixelSize: 9
-                                font.weight: Font.DemiBold
-                                horizontalAlignment: Text.AlignHCenter
-                                elide: Text.ElideRight
-                            }
-                        }
-
-                        MouseArea {
-                            id: profileMouse
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: {
-                                if (root.triggerProfile) root.triggerProfile(modelData.action);
-                                batteryPopup.close();
-                            }
-                        }
+                    width: 90
+                    height: 76
+                    radius: ThemeService.radiusSmall
+                    icon: modelData.icon
+                    label: modelData.label
+                    iconColor: modelData.color
+                    labelColor: ThemeService.foreground
+                    iconPixelSize: 23
+                    labelPixelSize: 9
+                    labelWeight: Font.DemiBold
+                    hoverOpacity: 0.55
+                    active: PowerProfileService.activeProfile === modelData.action
+                    onClicked: {
+                        if (root.triggerProfile) root.triggerProfile(modelData.action);
+                        batteryPopup.close();
                     }
                 }
             }
-        }
-
-        Timer {
-            id: closeTimer
-            interval: ThemeService.animDuration + 50
-            onTriggered: batteryPopup.visible = false
-        }
-
-        function open() {
-            if (visible) return;
-            root.popupOpened();
-            PowerProfileService.refresh();
-            popupOpacity = 0;
-            popupScale = 0.94;
-            visible = true;
-            Qt.callLater(() => {
-                popupOpacity = 1;
-                popupScale = 1;
-            });
-        }
-
-        function close() {
-            if (!visible) return;
-            popupOpacity = 0;
-            popupScale = 0.94;
-            closeTimer.restart();
-        }
-
-        function toggle() {
-            if (visible) close();
-            else open();
         }
     }
 

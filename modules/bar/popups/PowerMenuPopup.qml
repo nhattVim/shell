@@ -9,6 +9,7 @@ Column {
     spacing: ThemeService.spacingLarge
     anchors.fill: parent
     anchors.margins: ThemeService.spacingExtraLarge
+    focus: visible
 
     property var triggerPower: null
     property int selectedIndex: 0
@@ -33,45 +34,20 @@ Column {
         
         Repeater {
             model: root.actionList
-            delegate: StyledRect {
+            delegate: ActionTile {
                 id: powerBtn
                 required property int index
                 required property var modelData
 
                 width: 80; height: 80
                 radius: ThemeService.radiusMedium
-                rectColor: ThemeService.surfaceBright
-                rectOpacity: (root.selectedIndex === index || powerBtnMouse.containsMouse) ? 0.6 : 0.2
-                borderOpacityValue: (root.selectedIndex === index || powerBtnMouse.containsMouse) ? 0.2 : 0.0
-                
-                Column {
-                    anchors.centerIn: parent
-                    spacing: ThemeService.spacingSmall
-                    Text {
-                        text: modelData.icon
-                        font.family: ThemeService.iconFont
-                        font.pixelSize: 24
-                        color: modelData.color
-                        anchors.horizontalCenter: parent.horizontalCenter
-                    }
-                    Text {
-                        text: modelData.label
-                        font.family: ThemeService.fontName
-                        font.pixelSize: 9
-                        font.bold: true
-                        color: ThemeService.textBright
-                        anchors.horizontalCenter: parent.horizontalCenter
-                    }
-                }
-
-                MouseArea {
-                    id: powerBtnMouse
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: { if (root.triggerPower) root.triggerPower(modelData.action); }
-                    onEntered: root.selectedIndex = index
-                }
+                icon: modelData.icon
+                label: modelData.label
+                iconColor: modelData.color
+                labelPixelSize: 9
+                selected: root.selectedIndex === index
+                onClicked: { if (root.triggerPower) root.triggerPower(modelData.action); }
+                onEntered: root.selectedIndex = index
             }
         }
     }

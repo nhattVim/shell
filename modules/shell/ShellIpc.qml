@@ -6,24 +6,70 @@ import "../../services"
 Item {
     id: root
 
-    required property var shellRoot
-
     IpcHandler {
         target: "ei"
 
         function launcher(): void {
             LauncherService.buildIndex();
-            root.shellRoot.launcherActive = !root.shellRoot.launcherActive;
+            OverlayService.toggleOverlay("launcher");
         }
 
         function clipboard(): void {
             ClipboardService.refresh();
-            root.shellRoot.clipboardActive = !root.shellRoot.clipboardActive;
+            OverlayService.toggleOverlay("clipboard");
         }
 
         function wallpaper(): void {
             WallpaperService.refresh();
-            root.shellRoot.wallpaperPickerActive = !root.shellRoot.wallpaperPickerActive;
+            OverlayService.toggleOverlay("wallpaper");
+        }
+
+        function dashboard(): void {
+            toggleDashboard();
+        }
+
+        function toggleDashboard(): void {
+            OverlayService.toggleDashboard("dashboard");
+        }
+
+        function weather(): void {
+            toggleWeather();
+        }
+
+        function toggleWeather(): void {
+            OverlayService.toggleDashboard("weather");
+        }
+
+        function performance(): void {
+            togglePerformance();
+        }
+
+        function togglePerformance(): void {
+            OverlayService.toggleDashboard("performance");
+        }
+
+        function perfomance(): void {
+            togglePerformance();
+        }
+
+        function performanceMenu(): void {
+            togglePerformance();
+        }
+
+        function perfomanceMenu(): void {
+            togglePerformance();
+        }
+
+        function powerMenu(): void {
+            togglePowerMenu();
+        }
+
+        function togglePowerMenu(): void {
+            OverlayService.togglePowerMenu();
+        }
+
+        function close(): void {
+            OverlayService.closeAll();
         }
 
         function nextWallpaper(): void {
@@ -51,7 +97,7 @@ Item {
         }
 
         function micMute(): void {
-            AudioService.toggleMute();
+            AudioService.toggleMicMute();
         }
 
         function brightnessUp(): void {

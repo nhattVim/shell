@@ -52,14 +52,12 @@ StyledRect {
         onExited: root.rectOpacity = ThemeService.bgOpacity
     }
 
-    PopupWindow {
+    PopupSurface {
         id: wifiPopup
 
         property int popupWidth: 280
         property int popupMaxHeight: 360
         property int popupPadding: 10
-        property real popupOpacity: 0
-        property real popupScale: 0.94
         property bool passwordMode: false
         property var passwordNetwork: null
         property string passwordText: ""
@@ -73,90 +71,83 @@ StyledRect {
 
         implicitWidth: popupWidth
         implicitHeight: Math.min(wifiColumn.implicitHeight + popupPadding * 2, popupMaxHeight)
-        color: "transparent"
-        grabFocus: true
-        visible: false
 
-        Rectangle {
+        onOpening: {
+            OverlayService.closeIsland(false);
+            root.popupOpened();
+            clearPasswordState();
+            NetworkService.refresh();
+            if (NetworkService.wifiEnabled) NetworkService.rescan();
+        }
+
+        onClosing: clearPasswordState()
+
+        Flickable {
             anchors.fill: parent
-            radius: ThemeService.radiusMedium
-            color: Qt.rgba(ThemeService.background.r, ThemeService.background.g, ThemeService.background.b, ThemeService.bgOpacityHigh)
-            border.width: 1
-            border.color: Qt.rgba(ThemeService.border.r, ThemeService.border.g, ThemeService.border.b, ThemeService.borderOpacity)
-            opacity: wifiPopup.popupOpacity
-            scale: wifiPopup.popupScale
-            transformOrigin: Item.TopRight
+            contentWidth: width
+            contentHeight: wifiColumn.implicitHeight
+            clip: true
 
-            Behavior on opacity { NumberAnimation { duration: ThemeService.animDuration; easing.type: Easing.OutCubic } }
-            Behavior on scale { NumberAnimation { duration: ThemeService.animDuration; easing.type: Easing.OutCubic } }
+            Column {
+                id: wifiColumn
+                width: parent.width
+                spacing: 6
 
-            Flickable {
-                anchors.fill: parent
-                anchors.margins: wifiPopup.popupPadding
-                contentWidth: width
-                contentHeight: wifiColumn.implicitHeight
-                clip: true
-
-                Column {
-                    id: wifiColumn
+                Row {
                     width: parent.width
-                    spacing: 6
+                    height: 30
+                    spacing: ThemeService.spacingSmall
 
-                    Row {
-                        width: parent.width
-                        height: 30
-                        spacing: ThemeService.spacingSmall
-
-                        Text {
-                            text: "󰤨"
-                            font.family: ThemeService.iconFont
-                            font.pixelSize: 15
-                            color: ThemeService.secondary
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
-
-                        Text {
-                            width: parent.width - wifiToggle.width - 30
-                            text: "Wi-Fi"
-                            color: ThemeService.textBright
-                            font.family: ThemeService.fontName
-                            font.pixelSize: 13
-                            font.weight: Font.DemiBold
-                            elide: Text.ElideRight
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
-
-                        StyledRect {
-                            id: wifiToggle
-                            width: 34
-                            height: 18
-                            radius: height / 2
-                            rectColor: NetworkService.wifiEnabled ? ThemeService.primary : ThemeService.surfaceBright
-                            rectOpacity: NetworkService.wifiEnabled ? 0.95 : (toggleMouse.containsMouse ? 0.6 : 0.35)
-                            borderOpacityValue: 0.0
-
-                            Rectangle {
-                                width: 14
-                                height: 14
-                                radius: 7
-                                x: NetworkService.wifiEnabled ? parent.width - width - 2 : 2
-                                anchors.verticalCenter: parent.verticalCenter
-                                color: NetworkService.wifiEnabled ? ThemeService.background : ThemeService.textDim
-                                Behavior on x { NumberAnimation { duration: 160; easing.type: Easing.OutQuad } }
-                                Behavior on color { ColorAnimation { duration: 160 } }
-                            }
-
-                            MouseArea {
-                                id: toggleMouse
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: NetworkService.setWifiEnabled(!NetworkService.wifiEnabled)
-                            }
-                        }
+                    Text {
+                        text: "󰤨"
+                        font.family: ThemeService.iconFont
+                        font.pixelSize: 15
+                        color: ThemeService.secondary
+                        anchors.verticalCenter: parent.verticalCenter
                     }
 
-                    Rectangle { width: parent.width; height: 1; color: ThemeService.surfaceBright; opacity: 0.8 }
+                    Text {
+                        width: parent.width - wifiToggle.width - 30
+                        text: "Wi-Fi"
+                        color: ThemeService.textBright
+                        font.family: ThemeService.fontName
+                        font.pixelSize: 13
+                        font.weight: Font.DemiBold
+                        elide: Text.ElideRight
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                    StyledRect {
+                        id: wifiToggle
+                        width: 34
+                        height: 18
+                        radius: height / 2
+                        rectColor: NetworkService.wifiEnabled ? ThemeService.primary : ThemeService.surfaceBright
+                        rectOpacity: NetworkService.wifiEnabled ? 0.95 : (toggleMouse.containsMouse ? 0.6 : 0.35)
+                        borderOpacityValue: 0.0
+
+                        Rectangle {
+                            width: 14
+                            height: 14
+                            radius: 7
+                            x: NetworkService.wifiEnabled ? parent.width - width - 2 : 2
+                            anchors.verticalCenter: parent.verticalCenter
+                            color: NetworkService.wifiEnabled ? ThemeService.background : ThemeService.textDim
+                            Behavior on x { NumberAnimation { duration: 160; easing.type: Easing.OutQuad } }
+                            Behavior on color { ColorAnimation { duration: 160 } }
+                        }
+
+                        MouseArea {
+                            id: toggleMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: NetworkService.setWifiEnabled(!NetworkService.wifiEnabled)
+                        }
+                    }
+                }
+
+                Rectangle { width: parent.width; height: 1; color: ThemeService.surfaceBright; opacity: 0.8 }
 
                     Text {
                         visible: NetworkService.wifiConnected
@@ -401,62 +392,25 @@ StyledRect {
                     }
                 }
             }
-        }
 
-        Timer {
-            id: closeTimer
-            interval: ThemeService.animDuration + 50
-            onTriggered: wifiPopup.visible = false
-        }
-
-        function open() {
-            if (visible) return;
-            root.popupOpened();
+        function clearPasswordState() {
             passwordMode = false;
             passwordNetwork = null;
             passwordText = "";
             passwordError = "";
-            NetworkService.refresh();
-            if (NetworkService.wifiEnabled) NetworkService.rescan();
-            popupOpacity = 0;
-            popupScale = 0.94;
-            visible = true;
-            Qt.callLater(() => {
-                popupOpacity = 1;
-                popupScale = 1;
-            });
-        }
-
-        function close() {
-            if (!visible) return;
-            passwordMode = false;
-            passwordNetwork = null;
-            passwordText = "";
-            passwordError = "";
-            popupOpacity = 0;
-            popupScale = 0.94;
-            closeTimer.restart();
-        }
-
-        function toggle() {
-            if (visible) close();
-            else open();
         }
 
         function requestPassword(network) {
+            if (!visible) open();
             passwordNetwork = network;
             passwordText = "";
             passwordError = "";
             passwordMode = true;
-            if (!visible) open();
             Qt.callLater(() => passwordInput.forceActiveFocus());
         }
 
         function cancelPassword() {
-            passwordMode = false;
-            passwordNetwork = null;
-            passwordText = "";
-            passwordError = "";
+            clearPasswordState();
         }
 
         function submitPassword() {

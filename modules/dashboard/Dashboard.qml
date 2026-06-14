@@ -15,12 +15,46 @@ Item {
     signal requestClose()
     property var activePlayer: null
     property string currentPage: "dashboard"
+    readonly property var pageOrder: ["dashboard", "weather", "performance"]
 
     readonly property bool hasPlayer: activePlayer !== null && activePlayer !== undefined
     readonly property bool isPlaying: activePlayer?.playbackState === MprisPlaybackState.Playing
     readonly property string wallpaperPath: WallpaperService.currentWallpaper ? "file://" + WallpaperService.currentWallpaper : ""
     readonly property string artworkSource: (activePlayer?.trackArtUrl ?? "") !== "" ? activePlayer.trackArtUrl : ""
     readonly property string mediaSource: artworkSource !== "" ? artworkSource : wallpaperPath
+
+    onVisibleChanged: if (visible) forceActiveFocus()
+
+    function currentPageIndex() {
+        const index = pageOrder.indexOf(currentPage);
+        return index >= 0 ? index : 0;
+    }
+
+    function selectPageOffset(offset) {
+        const next = (currentPageIndex() + offset + pageOrder.length) % pageOrder.length;
+        OverlayService.openDashboard(pageOrder[next]);
+    }
+
+    focus: visible
+
+    Keys.onPressed: event => {
+        if (event.key === Qt.Key_Escape) {
+            root.requestClose();
+            event.accepted = true;
+        } else if (event.key === Qt.Key_Tab && !(event.modifiers & Qt.ShiftModifier)) {
+            root.selectPageOffset(1);
+            event.accepted = true;
+        } else if (event.key === Qt.Key_Backtab || (event.key === Qt.Key_Tab && (event.modifiers & Qt.ShiftModifier))) {
+            root.selectPageOffset(-1);
+            event.accepted = true;
+        } else if (event.key === Qt.Key_Right) {
+            root.selectPageOffset(1);
+            event.accepted = true;
+        } else if (event.key === Qt.Key_Left) {
+            root.selectPageOffset(-1);
+            event.accepted = true;
+        }
+    }
 
     Timer {
         running: root.isPlaying && root.visible
@@ -63,7 +97,7 @@ Item {
                 width: dashboardGrid.railWidth
                 height: dashboardGrid.height
                 currentPage: root.currentPage
-                onPageRequested: page => root.currentPage = page
+                onPageRequested: page => OverlayService.openDashboard(page)
                 onRequestClose: root.requestClose()
             }
 

@@ -17,53 +17,34 @@ PanelWindow {
     }
 
     // Layer shell settings
-    WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
+    WlrLayershell.keyboardFocus: visible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "quickshell-launcher"
     exclusionMode: ExclusionMode.Ignore
     exclusiveZone: 0
 
     color: "transparent"
-    visible: shellRoot.launcherActive
+    visible: OverlayService.activeOverlay === "launcher"
 
     onVisibleChanged: {
         if (visible) {
             searchText = "";
             searchInputText.text = "";
-            searchInputText.forceActiveFocus();
+            searchInputText.forceInputFocus();
         }
     }
 
-    // Rectangle {
-    //     anchors.fill: parent
-    //     color: ThemeService.scrimColor
-    //     opacity: shellRoot.launcherActive ? 1 : 0
-    //     Behavior on opacity {
-    //         NumberAnimation { duration: ThemeService.animDuration }
-    //     }
-    // }
-
-    // Dismiss launcher when clicking outside the main card
-    MouseArea {
+    ClickOutsideArea {
         anchors.fill: parent
-        onClicked: {
-            shellRoot.launcherActive = false;
-        }
+        onClicked: OverlayService.closeOverlay("launcher")
     }
 
     // Centered glassmorphic launcher card
-    StyledRect {
+    OverlayCard {
         id: launcherCard
         width: ThemeService.launcherWidth
         height: ThemeService.launcherHeight
         anchors.centerIn: parent
-        clip: true // Ensure content stays inside
-
-        // Prevent clicks inside the card from closing it
-        MouseArea {
-            anchors.fill: parent
-            onClicked: {} // Consume click
-        }
 
         // Inner layout
         Column {
@@ -72,75 +53,43 @@ PanelWindow {
             spacing: ThemeService.spacingLarge
 
             // --- SEARCH BOX ---
-            Rectangle {
+            SearchField {
+                id: searchInputText
                 width: parent.width
                 height: ThemeService.launcherSearchHeight
                 radius: ThemeService.radiusSmall
-                color: ThemeService.surfaceBright
-                border.color: ThemeService.primary
-                border.width: 1
+                fieldColor: ThemeService.surfaceBright
+                focusedBorderColor: ThemeService.primary
+                idleBorderColor: ThemeService.primary
+                icon: " "
+                iconFont: ThemeService.iconFont
+                iconTracksFocus: false
+                horizontalPadding: ThemeService.radiusMedium
+                fieldSpacing: ThemeService.spacingMedium
+                placeholder: "Search applications..."
 
-                Row {
-                    anchors.fill: parent
-                    anchors.leftMargin: ThemeService.radiusMedium
-                    anchors.rightMargin: ThemeService.radiusMedium
-                    spacing: ThemeService.spacingMedium
+                onTextChanged: {
+                    launcherWindow.searchText = text;
+                    launcherWindow.selectedIndex = 0;
+                }
 
-                    Text {
-                        text: " " // Search icon
-                        font.pixelSize: 16
-                        color: ThemeService.primary
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-
-                    TextInput {
-                        id: searchInputText
-                        width: parent.width - 32
-                        color: ThemeService.foreground
-                        font.family: ThemeService.fontName
-                        font.pixelSize: 13
-                        focus: true
-                        anchors.verticalCenter: parent.verticalCenter
-                        selectByMouse: true
-
-                        // Visual placeholder
-                        Text {
-                            text: "Search applications..."
-                            color: ThemeService.textDim
-                            font.family: ThemeService.fontName
-                            font.pixelSize: 13
-                            visible: parent.text.length === 0
-                            anchors.verticalCenter: parent.verticalCenter
+                onKeyPressed: event => {
+                    let resultsCount = resultsListView.count;
+                    if (event.key === Qt.Key_Down || (event.key === Qt.Key_Tab && !(event.modifiers & Qt.ShiftModifier))) {
+                        launcherWindow.selectedIndex = NavigationService.nextIndex(launcherWindow.selectedIndex, resultsCount);
+                        event.accepted = true;
+                    } else if (event.key === Qt.Key_Up || (event.key === Qt.Key_Backtab) || (event.key === Qt.Key_Tab && (event.modifiers & Qt.ShiftModifier))) {
+                        launcherWindow.selectedIndex = NavigationService.previousIndex(launcherWindow.selectedIndex, resultsCount);
+                        event.accepted = true;
+                    } else if (event.key === Qt.Key_Enter || event.key === Qt.Key_Return) {
+                        if (resultsCount > 0 && launcherWindow.selectedIndex >= 0 && launcherWindow.selectedIndex < resultsCount) {
+                            LauncherService.launch(launcherWindow.results[launcherWindow.selectedIndex]);
+                            OverlayService.closeOverlay("launcher");
                         }
-
-                        onTextChanged: {
-                            launcherWindow.searchText = text;
-                            launcherWindow.selectedIndex = 0;
-                        }
-
-                        Keys.onPressed: event => {
-                            let resultsCount = resultsListView.count;
-                            if (event.key === Qt.Key_Down || (event.key === Qt.Key_Tab && !(event.modifiers & Qt.ShiftModifier))) {
-                                if (resultsCount > 0) {
-                                    launcherWindow.selectedIndex = (launcherWindow.selectedIndex + 1) % resultsCount;
-                                }
-                                event.accepted = true;
-                            } else if (event.key === Qt.Key_Up || (event.key === Qt.Key_Backtab) || (event.key === Qt.Key_Tab && (event.modifiers & Qt.ShiftModifier))) {
-                                if (resultsCount > 0) {
-                                    launcherWindow.selectedIndex = (launcherWindow.selectedIndex - 1 + resultsCount) % resultsCount;
-                                }
-                                event.accepted = true;
-                            } else if (event.key === Qt.Key_Enter || event.key === Qt.Key_Return) {
-                                if (resultsCount > 0 && launcherWindow.selectedIndex >= 0 && launcherWindow.selectedIndex < resultsCount) {
-                                    LauncherService.launch(launcherWindow.results[launcherWindow.selectedIndex]);
-                                    shellRoot.launcherActive = false;
-                                }
-                                event.accepted = true;
-                            } else if (event.key === Qt.Key_Escape) {
-                                shellRoot.launcherActive = false;
-                                event.accepted = true;
-                            }
-                        }
+                        event.accepted = true;
+                    } else if (event.key === Qt.Key_Escape) {
+                        OverlayService.closeOverlay("launcher");
+                        event.accepted = true;
                     }
                 }
             }
@@ -217,7 +166,7 @@ PanelWindow {
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
                             LauncherService.launch(modelData);
-                            shellRoot.launcherActive = false;
+                            OverlayService.closeOverlay("launcher");
                         }
                     }
                 }
