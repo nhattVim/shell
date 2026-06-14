@@ -53,8 +53,8 @@ PanelWindow {
         anchors.centerIn: parent
         radius: 22
         rectColor: ThemeService.background
-        rectOpacity: 0.94
-        borderOpacityValue: 0.18
+        rectOpacity: 0.96
+        borderOpacityValue: 0.24
 
         Column {
             anchors.fill: parent
@@ -70,7 +70,9 @@ PanelWindow {
                     width: 42
                     height: 42
                     radius: 14
-                    color: Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.16)
+                    color: Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.18)
+                    border.width: 1
+                    border.color: Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.24)
 
                     Text {
                         anchors.centerIn: parent
@@ -160,7 +162,7 @@ PanelWindow {
             Rectangle {
                 width: parent.width
                 height: 1
-                color: Qt.rgba(ThemeService.border.r, ThemeService.border.g, ThemeService.border.b, 0.1)
+                color: Qt.rgba(ThemeService.border.r, ThemeService.border.g, ThemeService.border.b, 0.14)
             }
 
             Row {
@@ -173,9 +175,9 @@ PanelWindow {
                     width: 300
                     height: parent.height
                     radius: 20
-                    color: ThemeService.surface
+                    color: Qt.rgba(ThemeService.surface.r, ThemeService.surface.g, ThemeService.surface.b, 0.96)
                     border.width: 1
-                    border.color: Qt.rgba(ThemeService.border.r, ThemeService.border.g, ThemeService.border.b, 0.12)
+                    border.color: Qt.rgba(ThemeService.border.r, ThemeService.border.g, ThemeService.border.b, 0.18)
                     clip: true
 
                     Image {
@@ -191,7 +193,12 @@ PanelWindow {
 
                     Rectangle {
                         anchors.fill: parent
-                        color: Qt.rgba(ThemeService.background.r, ThemeService.background.g, ThemeService.background.b, root.selectedPath === "" ? 0.0 : 0.1)
+                        visible: root.selectedPath !== ""
+                        gradient: Gradient {
+                            GradientStop { position: 0.0; color: Qt.rgba(ThemeService.background.r, ThemeService.background.g, ThemeService.background.b, 0.04) }
+                            GradientStop { position: 0.55; color: Qt.rgba(ThemeService.background.r, ThemeService.background.g, ThemeService.background.b, 0.08) }
+                            GradientStop { position: 1.0; color: Qt.rgba(ThemeService.background.r, ThemeService.background.g, ThemeService.background.b, 0.82) }
+                        }
                     }
 
                     Column {
@@ -250,8 +257,18 @@ PanelWindow {
                                 width: 132
                                 height: 36
                                 radius: 12
-                                color: root.selectedPath !== "" ? ThemeService.primary : ThemeService.surfaceBright
+                                color: root.selectedPath !== ""
+                                    ? Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, applyMouse.containsMouse ? 1.0 : 0.86)
+                                    : ThemeService.surfaceBright
                                 opacity: root.selectedPath !== "" ? 1.0 : 0.6
+                                border.width: 1
+                                border.color: root.selectedPath !== ""
+                                    ? Qt.rgba(ThemeService.textBright.r, ThemeService.textBright.g, ThemeService.textBright.b, 0.12)
+                                    : Qt.rgba(ThemeService.border.r, ThemeService.border.g, ThemeService.border.b, 0.08)
+
+                                Behavior on color {
+                                    ColorAnimation { duration: 120 }
+                                }
 
                                 Text {
                                     anchors.centerIn: parent
@@ -263,8 +280,10 @@ PanelWindow {
                                 }
 
                                 MouseArea {
+                                    id: applyMouse
                                     anchors.fill: parent
                                     enabled: root.selectedPath !== ""
+                                    hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: root.applySelected()
                                 }
@@ -274,9 +293,16 @@ PanelWindow {
                                 width: 96
                                 height: 36
                                 radius: 12
-                                color: Qt.rgba(ThemeService.surfaceBright.r, ThemeService.surfaceBright.g, ThemeService.surfaceBright.b, closeMouse.containsMouse ? 0.78 : 0.52)
+                                color: Qt.rgba(ThemeService.surfaceBright.r, ThemeService.surfaceBright.g, ThemeService.surfaceBright.b, closeMouse.containsMouse ? 0.72 : 0.44)
                                 border.width: 1
-                                border.color: Qt.rgba(ThemeService.border.r, ThemeService.border.g, ThemeService.border.b, 0.1)
+                                border.color: Qt.rgba(ThemeService.border.r, ThemeService.border.g, ThemeService.border.b, closeMouse.containsMouse ? 0.20 : 0.10)
+
+                                Behavior on color {
+                                    ColorAnimation { duration: 120 }
+                                }
+                                Behavior on border.color {
+                                    ColorAnimation { duration: 120 }
+                                }
 
                                 Text {
                                     anchors.centerIn: parent
@@ -324,9 +350,18 @@ PanelWindow {
                     width: parent.width - previewPanel.width - parent.spacing
                     height: parent.height
 
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: 18
+                        color: Qt.rgba(ThemeService.surface.r, ThemeService.surface.g, ThemeService.surface.b, 0.28)
+                        border.width: 1
+                        border.color: Qt.rgba(ThemeService.border.r, ThemeService.border.g, ThemeService.border.b, 0.06)
+                    }
+
                     GridView {
                         id: wallpaperGrid
                         anchors.fill: parent
+                        anchors.margins: 1
                         clip: true
                         model: root.results
                         currentIndex: root.selectedIndex
@@ -335,8 +370,11 @@ PanelWindow {
                         cellHeight: 96
 
                         delegate: Item {
+                            id: wallpaperItem
                             required property int index
                             required property string modelData
+                            readonly property bool selected: index === root.selectedIndex
+                            readonly property bool current: modelData === WallpaperService.currentWallpaper
 
                             width: wallpaperGrid.cellWidth
                             height: wallpaperGrid.cellHeight
@@ -346,16 +384,20 @@ PanelWindow {
                                 anchors.fill: parent
                                 anchors.margins: 5
                                 radius: 15
-                                color: ThemeService.surface
+                                color: Qt.rgba(ThemeService.surface.r, ThemeService.surface.g, ThemeService.surface.b, 0.92)
                                 clip: true
-                                scale: index === root.selectedIndex ? 1.0 : 0.985
+                                scale: wallpaperItem.selected ? 1.0 : (itemMouse.containsMouse ? 0.995 : 0.976)
 
-                                border.width: index === root.selectedIndex || modelData === WallpaperService.currentWallpaper ? 2 : 1
-                                border.color: index === root.selectedIndex
+                                border.width: wallpaperItem.selected || wallpaperItem.current ? 2 : 1
+                                border.color: wallpaperItem.selected
                                     ? ThemeService.primary
-                                    : modelData === WallpaperService.currentWallpaper
+                                    : wallpaperItem.current
                                         ? Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.52)
-                                        : Qt.rgba(ThemeService.border.r, ThemeService.border.g, ThemeService.border.b, 0.10)
+                                        : Qt.rgba(ThemeService.border.r, ThemeService.border.g, ThemeService.border.b, itemMouse.containsMouse ? 0.20 : 0.08)
+
+                                Behavior on border.color {
+                                    ColorAnimation { duration: 120 }
+                                }
 
                                 Behavior on scale {
                                     NumberAnimation { duration: 120; easing.type: Easing.OutCubic }
@@ -373,8 +415,8 @@ PanelWindow {
 
                                 Rectangle {
                                     anchors.fill: parent
-                                    color: itemMouse.containsMouse || index === root.selectedIndex
-                                        ? Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.12)
+                                    color: itemMouse.containsMouse || wallpaperItem.selected
+                                        ? Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, wallpaperItem.selected ? 0.18 : 0.10)
                                         : "transparent"
 
                                     Behavior on color {
@@ -385,10 +427,22 @@ PanelWindow {
                                 Rectangle {
                                     anchors.left: parent.left
                                     anchors.right: parent.right
+                                    anchors.top: parent.top
+                                    height: 42
+                                    visible: itemMouse.containsMouse || wallpaperItem.selected || wallpaperItem.current
+                                    gradient: Gradient {
+                                        GradientStop { position: 0.0; color: Qt.rgba(ThemeService.background.r, ThemeService.background.g, ThemeService.background.b, 0.54) }
+                                        GradientStop { position: 1.0; color: Qt.rgba(ThemeService.background.r, ThemeService.background.g, ThemeService.background.b, 0.0) }
+                                    }
+                                }
+
+                                Rectangle {
+                                    anchors.left: parent.left
+                                    anchors.right: parent.right
                                     anchors.bottom: parent.bottom
                                     height: 28
-                                    color: Qt.rgba(ThemeService.background.r, ThemeService.background.g, ThemeService.background.b, 0.66)
-                                    visible: itemMouse.containsMouse || index === root.selectedIndex || modelData === WallpaperService.currentWallpaper
+                                    color: Qt.rgba(ThemeService.background.r, ThemeService.background.g, ThemeService.background.b, 0.72)
+                                    visible: itemMouse.containsMouse || wallpaperItem.selected || wallpaperItem.current
 
                                     Text {
                                         anchors.left: parent.left
@@ -409,12 +463,12 @@ PanelWindow {
                                         anchors.right: parent.right
                                         anchors.rightMargin: 8
                                         anchors.verticalCenter: parent.verticalCenter
-                                        width: modelData === WallpaperService.currentWallpaper ? 18 : 0
+                                        width: wallpaperItem.current ? 18 : 0
                                         text: "󰄬"
                                         color: ThemeService.primary
                                         font.family: ThemeService.iconFont
                                         font.pixelSize: 13
-                                        visible: modelData === WallpaperService.currentWallpaper
+                                        visible: wallpaperItem.current
                                     }
                                 }
 
@@ -425,7 +479,7 @@ PanelWindow {
                                     width: 24
                                     height: 22
                                     radius: 8
-                                    visible: index === root.selectedIndex
+                                    visible: wallpaperItem.selected
                                     color: Qt.rgba(ThemeService.background.r, ThemeService.background.g, ThemeService.background.b, 0.72)
                                     border.width: 1
                                     border.color: ThemeService.primary
@@ -460,9 +514,9 @@ PanelWindow {
                     Rectangle {
                         anchors.fill: parent
                         radius: 18
-                        color: "transparent"
+                        color: Qt.rgba(ThemeService.surface.r, ThemeService.surface.g, ThemeService.surface.b, 0.42)
                         border.width: 1
-                        border.color: Qt.rgba(ThemeService.border.r, ThemeService.border.g, ThemeService.border.b, 0.08)
+                        border.color: Qt.rgba(ThemeService.border.r, ThemeService.border.g, ThemeService.border.b, 0.12)
                         visible: wallpaperGrid.count === 0
 
                         Column {
