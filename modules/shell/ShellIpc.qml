@@ -25,46 +25,18 @@ Item {
         }
 
         function dashboard(): void {
-            toggleDashboard();
-        }
-
-        function toggleDashboard(): void {
             OverlayService.toggleDashboard("dashboard");
         }
 
         function weather(): void {
-            toggleWeather();
-        }
-
-        function toggleWeather(): void {
             OverlayService.toggleDashboard("weather");
         }
 
         function performance(): void {
-            togglePerformance();
-        }
-
-        function togglePerformance(): void {
             OverlayService.toggleDashboard("performance");
         }
 
-        function perfomance(): void {
-            togglePerformance();
-        }
-
-        function performanceMenu(): void {
-            togglePerformance();
-        }
-
-        function perfomanceMenu(): void {
-            togglePerformance();
-        }
-
         function powerMenu(): void {
-            togglePowerMenu();
-        }
-
-        function togglePowerMenu(): void {
             OverlayService.togglePowerMenu();
         }
 
