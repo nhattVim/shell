@@ -14,10 +14,8 @@ import "services"
 ShellRoot {
     id: shellRoot
 
-    ShellIpc {
-    }
-
     readonly property bool idleServiceLoaded: IdleService.enabled
+    readonly property bool wallpaperThemeLoaded: WallpaperThemeService.enabled
 
     // Instantiates the Wallpaper background on all connected monitors
     Variants {
