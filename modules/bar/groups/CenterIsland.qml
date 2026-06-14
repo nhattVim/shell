@@ -115,7 +115,7 @@ Item {
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: OverlayService.toggleDashboard("dashboard")
+                            onClicked: OverlayService.toggleDashboard()
                         }
                     }
 

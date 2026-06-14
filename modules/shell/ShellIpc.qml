@@ -25,15 +25,7 @@ Item {
         }
 
         function dashboard(): void {
-            OverlayService.toggleDashboard("dashboard");
-        }
-
-        function weather(): void {
-            OverlayService.toggleDashboard("weather");
-        }
-
-        function performance(): void {
-            OverlayService.toggleDashboard("performance");
+            OverlayService.toggleDashboard();
         }
 
         function powerMenu(): void {

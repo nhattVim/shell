@@ -76,14 +76,13 @@ Singleton {
         islandState = "media";
     }
 
-    function toggleDashboard(page) {
-        const nextPage = normalizeDashboardPage(page);
-        if (islandState === "media" && dashboardPage === nextPage) {
+    function toggleDashboard() {
+        if (islandState === "media") {
             closeIsland();
             return;
         }
 
-        openDashboard(nextPage);
+        openDashboard(dashboardPage);
     }
 
     function openIsland(state) {
