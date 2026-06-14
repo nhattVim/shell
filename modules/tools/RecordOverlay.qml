@@ -93,61 +93,43 @@ PanelWindow {
         }
     }
 
-    Rectangle {
+    ToolModeBar {
         id: modeBar
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 50
         width: 286
-        height: 56
-        radius: 28
-        color: Qt.rgba(ThemeService.surface.r, ThemeService.surface.g, ThemeService.surface.b, 0.94)
-        border.color: Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.14)
-        border.width: 1
-        z: 10
+        buttonSize: 40
+        rowSpacing: 8
+        currentMode: ScreenRecorderService.overlayMode
+        onModeSelected: mode => ScreenRecorderService.setOverlayMode(mode)
 
-        Row {
-            anchors.centerIn: parent
-            spacing: 8
-
-            ToolModeButton {
-                width: 40
+        prefixContent: Component {
+            Row {
                 height: 40
-                icon: ScreenRecorderService.recordAudioOutput ? "󰕾" : "󰝟"
-                active: ScreenRecorderService.recordAudioOutput
-                onClicked: ScreenRecorderService.toggleAudioOutput()
-            }
+                spacing: 8
 
-            ToolModeButton {
-                width: 40
-                height: 40
-                icon: ScreenRecorderService.recordAudioInput ? "󰍬" : "󰍭"
-                active: ScreenRecorderService.recordAudioInput
-                onClicked: ScreenRecorderService.toggleAudioInput()
-            }
-
-            Rectangle {
-                width: 1
-                height: 24
-                anchors.verticalCenter: parent.verticalCenter
-                color: Qt.rgba(ThemeService.foreground.r, ThemeService.foreground.g, ThemeService.foreground.b, 0.22)
-            }
-
-            Repeater {
-                model: [
-                    { mode: "region", icon: "󰩭" },
-                    { mode: "window", icon: "󰖲" },
-                    { mode: "screen", icon: "󰍹" }
-                ]
-
-                delegate: ToolModeButton {
-                    required property var modelData
-
+                ToolModeButton {
                     width: 40
                     height: 40
-                    icon: modelData.icon
-                    active: ScreenRecorderService.overlayMode === modelData.mode
-                    onClicked: ScreenRecorderService.setOverlayMode(modelData.mode)
+                    icon: ScreenRecorderService.recordAudioOutput ? "󰕾" : "󰝟"
+                    active: ScreenRecorderService.recordAudioOutput
+                    onClicked: ScreenRecorderService.toggleAudioOutput()
+                }
+
+                ToolModeButton {
+                    width: 40
+                    height: 40
+                    icon: ScreenRecorderService.recordAudioInput ? "󰍬" : "󰍭"
+                    active: ScreenRecorderService.recordAudioInput
+                    onClicked: ScreenRecorderService.toggleAudioInput()
+                }
+
+                Rectangle {
+                    width: 1
+                    height: 24
+                    anchors.verticalCenter: parent.verticalCenter
+                    color: Qt.rgba(ThemeService.foreground.r, ThemeService.foreground.g, ThemeService.foreground.b, 0.22)
                 }
             }
         }

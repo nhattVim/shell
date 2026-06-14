@@ -1,5 +1,4 @@
 import QtQuick
-import "../../../services"
 import "../../../config"
 
 Item {
@@ -11,6 +10,9 @@ Item {
     property bool stableSize: false
     property int stableButtonSize: 40
     property int iconPixelSize: 18
+    readonly property bool hovered: buttonMouse.containsMouse
+
+    signal clicked()
 
     Rectangle {
         anchors.centerIn: parent
@@ -27,5 +29,13 @@ Item {
         font.family: ThemeService.iconFont
         font.pixelSize: root.iconPixelSize
         color: root.selected ? ThemeService.background : root.accent
+    }
+
+    MouseArea {
+        id: buttonMouse
+        anchors.fill: parent
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
+        onClicked: root.clicked()
     }
 }

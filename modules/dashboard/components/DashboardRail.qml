@@ -31,13 +31,7 @@ Item {
             icon: ""
             selected: root.currentPage === "dashboard"
             accent: root.accent
-
-            MouseArea {
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: root.pageRequested("dashboard")
-            }
+            onClicked: root.pageRequested("dashboard")
         }
 
         RailButton {
@@ -46,13 +40,7 @@ Item {
             icon: "󰖕"
             selected: root.currentPage === "weather"
             accent: root.accent
-
-            MouseArea {
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: root.pageRequested("weather")
-            }
+            onClicked: root.pageRequested("weather")
         }
 
         RailButton {
@@ -61,13 +49,7 @@ Item {
             icon: "󰍛"
             selected: root.currentPage === "performance"
             accent: root.accent
-
-            MouseArea {
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: root.pageRequested("performance")
-            }
+            onClicked: root.pageRequested("performance")
         }
     }
 
@@ -79,14 +61,7 @@ Item {
         height: 48
         icon: "󰒓"
         accent: root.accent
-        selected: closeArea.containsMouse
-
-        MouseArea {
-            id: closeArea
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onClicked: root.requestClose()
-        }
+        selected: hovered
+        onClicked: root.requestClose()
     }
 }

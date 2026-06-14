@@ -110,41 +110,17 @@ PanelWindow {
         }
     }
 
-    Rectangle {
+    ToolModeBar {
         id: modeBar
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 50
         width: 196
-        height: 56
-        radius: 28
-        color: Qt.rgba(ThemeService.surface.r, ThemeService.surface.g, ThemeService.surface.b, 0.92)
-        border.color: Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, 0.14)
-        border.width: 1
-        z: 10
-
-        Row {
-            anchors.centerIn: parent
-            spacing: 10
-
-            Repeater {
-                model: [
-                    { mode: "region", icon: "󰩭" },
-                    { mode: "window", icon: "󰖲" },
-                    { mode: "screen", icon: "󰍹" }
-                ]
-
-                delegate: ToolModeButton {
-                    required property var modelData
-
-                    width: 44
-                    height: 44
-                    icon: modelData.icon
-                    iconPixelSize: 19
-                    active: ScreenshotService.overlayMode === modelData.mode
-                    onClicked: ScreenshotService.setOverlayMode(modelData.mode)
-                }
-            }
-        }
+        buttonSize: 44
+        iconPixelSize: 19
+        rowSpacing: 10
+        surfaceOpacity: 0.92
+        currentMode: ScreenshotService.overlayMode
+        onModeSelected: mode => ScreenshotService.setOverlayMode(mode)
     }
 }

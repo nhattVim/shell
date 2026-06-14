@@ -37,7 +37,6 @@ Singleton {
         lastPath = nextPath();
         lastError = "";
 
-        console.log("[ScreenshotService] capture requested:", pendingMode, lastPath);
         busy = true;
         ensureDirProcess.running = true;
     }
@@ -54,7 +53,6 @@ Singleton {
         if (busy) return;
         lastError = "";
         overlayMode = "region";
-        console.log("[ScreenshotService] region overlay requested");
         regionRequestSerial += 1;
         regionOverlayVisible = true;
         refreshWindows();
@@ -91,7 +89,6 @@ Singleton {
         regionOverlayVisible = false;
         pendingGeometry = Math.round(x) + "," + Math.round(y) + " " + Math.round(w) + "x" + Math.round(h);
 
-        console.log("[ScreenshotService] geometry requested:", pendingGeometry, lastPath);
         captureDelay.restart();
     }
 
@@ -109,7 +106,6 @@ Singleton {
         } else {
             captureProcess.command = ["grim", lastPath];
         }
-        console.log("[ScreenshotService] running:", captureProcess.command.join(" "));
         captureProcess.running = true;
     }
 
@@ -128,7 +124,6 @@ Singleton {
             } else if (root.pendingMode === "geometry") {
                 root.runGrim(root.pendingGeometry);
             } else {
-                console.log("[ScreenshotService] starting slurp");
                 slurpProcess.running = true;
             }
         }
@@ -179,7 +174,6 @@ Singleton {
                 return;
             }
 
-            console.log("[ScreenshotService] saved:", root.lastPath);
             copyNotifyProcess.command = ["sh", "-c", "wl-copy --type image/png < " + root.shellQuote(root.lastPath) + " && notify-send " + root.shellQuote("Screenshot") + " " + root.shellQuote("Saved to " + root.lastPath)];
             copyNotifyProcess.running = true;
             root.busy = false;

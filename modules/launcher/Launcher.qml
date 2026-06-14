@@ -164,6 +164,7 @@ PanelWindow {
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
+                        onEntered: launcherWindow.selectedIndex = index
                         onClicked: {
                             LauncherService.launch(modelData);
                             OverlayService.closeOverlay("launcher");

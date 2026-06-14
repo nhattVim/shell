@@ -113,12 +113,7 @@ PanelWindow {
 
     function triggerPower(action) {
         if (action === "close") { OverlayService.closeIsland(); return; }
-        let p = Qt.createQmlObject('import Quickshell.Io; Process { }', barWindow);
-        if (action === "shutdown") p.command = ["systemctl", "poweroff"];
-        else if (action === "reboot") p.command = ["reboot"];
-        else if (action === "logout") p.command = ["hyprctl", "dispatch", "exit"];
-        p.onExited.connect(() => p.destroy());
-        p.running = true;
+        SystemActionService.runPowerAction(action);
         OverlayService.closeIsland();
     }
 

@@ -17,6 +17,21 @@ Singleton {
         }
     }
 
+    function applyScanResults(text) {
+        const paths = text.split("\n")
+            .map(line => line.trim())
+            .filter(path => path.length > 0)
+            .sort();
+
+        root.wallpaperPaths = paths;
+        if (paths.length > 0) {
+            loadConfig();
+        } else {
+            root.currentIndex = -1;
+            console.log("[WallpaperService] No wallpapers found in", root.wallpaperDir);
+        }
+    }
+
     // Scans wall dir for files
     Process {
         id: scanWallpapers
@@ -26,23 +41,7 @@ Singleton {
 
         stdout: StdioCollector {
             waitForEnd: true
-            onStreamFinished: {
-                let lines = text.split("\n");
-                let paths = [];
-                for (let line of lines) {
-                    let cleaned = line.trim();
-                    if (cleaned) {
-                        paths.push(cleaned);
-                    }
-                }
-                if (paths.length > 0) {
-                    paths.sort();
-                    root.wallpaperPaths = paths;
-                    loadConfig();
-                } else {
-                    console.log("[WallpaperService] No wallpapers found in", wallpaperDir);
-                }
-            }
+            onStreamFinished: root.applyScanResults(text)
         }
     }
 
@@ -55,9 +54,7 @@ Singleton {
     Process {
         id: ensureCacheDir
         command: ["mkdir", "-p", Quickshell.env("HOME") + "/.cache/ei"]
-        onExited: {
-            scanWallpapers.running = true;
-        }
+        onExited: root.refresh()
     }
 
     function loadConfig() {
