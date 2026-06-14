@@ -208,24 +208,6 @@ PanelWindow {
                         anchors.margins: 14
                         spacing: 10
 
-                        Rectangle {
-                            width: currentBadgeText.implicitWidth + 22
-                            height: 28
-                            radius: 10
-                            visible: root.selectedPath === WallpaperService.currentWallpaper && root.selectedPath !== ""
-                            color: ThemeService.primary
-
-                            Text {
-                                id: currentBadgeText
-                                anchors.centerIn: parent
-                                text: "󰄬 Current"
-                                color: ThemeService.background
-                                font.family: ThemeService.fontName
-                                font.pixelSize: 11
-                                font.weight: Font.Bold
-                            }
-                        }
-
                         Text {
                             width: parent.width
                             text: root.selectedPath !== "" ? root.fileName(root.selectedPath) : "No wallpaper selected"
@@ -246,80 +228,6 @@ PanelWindow {
                             wrapMode: Text.Wrap
                             maximumLineCount: 2
                             elide: Text.ElideRight
-                        }
-
-                        Row {
-                            width: parent.width
-                            height: 36
-                            spacing: 8
-
-                            Rectangle {
-                                width: 132
-                                height: 36
-                                radius: 12
-                                color: root.selectedPath !== ""
-                                    ? Qt.rgba(ThemeService.primary.r, ThemeService.primary.g, ThemeService.primary.b, applyMouse.containsMouse ? 1.0 : 0.86)
-                                    : ThemeService.surfaceBright
-                                opacity: root.selectedPath !== "" ? 1.0 : 0.6
-                                border.width: 1
-                                border.color: root.selectedPath !== ""
-                                    ? Qt.rgba(ThemeService.textBright.r, ThemeService.textBright.g, ThemeService.textBright.b, 0.12)
-                                    : Qt.rgba(ThemeService.border.r, ThemeService.border.g, ThemeService.border.b, 0.08)
-
-                                Behavior on color {
-                                    ColorAnimation { duration: 120 }
-                                }
-
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: "Apply"
-                                    color: root.selectedPath !== "" ? ThemeService.background : ThemeService.textDim
-                                    font.family: ThemeService.fontName
-                                    font.pixelSize: 12
-                                    font.weight: Font.DemiBold
-                                }
-
-                                MouseArea {
-                                    id: applyMouse
-                                    anchors.fill: parent
-                                    enabled: root.selectedPath !== ""
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: root.applySelected()
-                                }
-                            }
-
-                            Rectangle {
-                                width: 96
-                                height: 36
-                                radius: 12
-                                color: Qt.rgba(ThemeService.surfaceBright.r, ThemeService.surfaceBright.g, ThemeService.surfaceBright.b, closeMouse.containsMouse ? 0.72 : 0.44)
-                                border.width: 1
-                                border.color: Qt.rgba(ThemeService.border.r, ThemeService.border.g, ThemeService.border.b, closeMouse.containsMouse ? 0.20 : 0.10)
-
-                                Behavior on color {
-                                    ColorAnimation { duration: 120 }
-                                }
-                                Behavior on border.color {
-                                    ColorAnimation { duration: 120 }
-                                }
-
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: "Close"
-                                    color: ThemeService.foreground
-                                    font.family: ThemeService.fontName
-                                    font.pixelSize: 12
-                                }
-
-                                MouseArea {
-                                    id: closeMouse
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: OverlayService.closeOverlay("wallpaper")
-                                }
-                            }
                         }
                     }
 
